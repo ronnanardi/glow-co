@@ -16,8 +16,10 @@
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <button class="btn-cart" data-bs-toggle="modal" data-bs-target="#cartModal">
-                    <i class="bi bi-bag"></i>
-                    <span class="cart-badge" id="cartBadge">0</span>
+                    <a href="{{ route('cart.index') }}" class="btn-cart">
+                        <i class="bi bi-bag"></i>
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </a>
                 </button>
 
                 @auth
@@ -50,7 +52,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('orders.index') }}">
                                     <i class="bi bi-bag"></i> Pesanan Saya
                                 </a>
                             </li>

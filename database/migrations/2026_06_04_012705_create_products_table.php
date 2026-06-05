@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('stock')->default(0);
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->string('badge')->nullable();
             $table->timestamps();
         });
     }

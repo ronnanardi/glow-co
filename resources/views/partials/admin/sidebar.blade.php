@@ -9,7 +9,7 @@
         <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2"></i> Dashboard
         </a>
-        <a href="#" class="{{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.products.index') }}" class="{{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
             <i class="bi bi-box-seam"></i> Produk
         </a>
         <a href="#" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
@@ -20,9 +20,10 @@
         </a>
 
         <div class="menu-label mt-3">Manajemen</div>
-        <a href="#" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
             <i class="bi bi-tags"></i> Kategori
         </a>
+
         <a href="#"><i class="bi bi-percent"></i> Promo & Voucher</a>
         <a href="#"><i class="bi bi-star"></i> Review</a>
         <a href="#"><i class="bi bi-truck"></i> Pengiriman</a>

@@ -66,3 +66,18 @@
             .main-content { margin-left:0; }
             .sidebar-toggle { display:flex; align-items:center; justify-content:center; }
         }
+
+        .btn-theme {
+            background: #9A7B67;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-theme:hover {
+            background: #7d6354;
+            color: white;
+        }

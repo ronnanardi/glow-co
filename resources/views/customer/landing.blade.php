@@ -75,36 +75,18 @@
                 <h2 class="section-title">Temukan Perawatan <span>Terbaik</span></h2>
             </div>
             <div class="row g-4">
-                <div class="col-md-4" data-reveal>
-                    <div class="cat-card">
-                        <img src="https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?q=80&w=600" alt="Facial Cleanser">
-                        <div class="cat-overlay">
-                            <h3 class="cat-title">Facial Cleanser</h3>
-                            <span class="cat-count">45+ Produk</span>
-                            <button class="cat-btn">Lihat Semua</button>
+                @foreach($categories as $category)
+                    <div class="col-md-4" data-reveal>
+                        <div class="cat-card">
+                            <img src="{{ $category->image }}" alt="{{ $category->name }}">
+                            <div class="cat-overlay">
+                                <h3 class="cat-title">{{ $category->name }}</h3>
+                                <span class="cat-count">{{ $category->products_count }}+ Produk</span>
+                                <button class="cat-btn">Lihat Semua</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4" data-reveal>
-                    <div class="cat-card">
-                        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600" alt="Serum & Essence">
-                        <div class="cat-overlay">
-                            <h3 class="cat-title">Serum & Essence</h3>
-                            <span class="cat-count">60+ Produk</span>
-                            <button class="cat-btn">Lihat Semua</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4" data-reveal>
-                    <div class="cat-card">
-                        <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600" alt="Sunscreen & Moisturizer">
-                        <div class="cat-overlay">
-                            <h3 class="cat-title">Sunscreen & Moisturizer</h3>
-                            <span class="cat-count">35+ Produk</span>
-                            <button class="cat-btn">Lihat Semua</button>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
@@ -155,103 +137,54 @@
                 </div>
                 <div class="filter-tabs mt-3 mt-md-0">
                     <button class="filter-tab active" data-filter="all">Semua</button>
-                    <button class="filter-tab" data-filter="serum">Serum</button>
-                    <button class="filter-tab" data-filter="cleanser">Cleanser</button>
-                    <button class="filter-tab" data-filter="moisturizer">Moisturizer</button>
+                    @foreach($categories as $category)
+                        <button class="filter-tab" data-filter="{{ $category->slug }}">
+                            {{ $category->name }}
+                        </button>
+                    @endforeach
                 </div>
             </div>
+
             <div class="row g-4">
-                <!-- Product 1 -->
-                <div class="col-6 col-lg-3 product-item" data-cat="serum" data-reveal>
-                    <div class="product-card">
-                        <div class="product-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=400" alt="Glow Serum">
-                            <span class="product-badge badge-best">Best</span>
-                            <div class="product-actions">
-                                <button class="btn-action btn-wishlist"><i class="bi bi-heart"></i></button>
-                                <button class="btn-action btn-quick-view"><i class="bi bi-eye"></i></button>
+                @foreach($products as $product)
+                    <div class="col-6 col-lg-3 product-item" data-cat="{{ $product->category->slug }}" data-reveal>
+                        <div class="product-card">
+                            <div class="product-img-wrap">
+                                <img src="{{ $product->image && !str_starts_with($product->image, 'http')
+                                            ? Storage::url($product->image)
+                                            : $product->image }}" alt="{{ $product->name }}">
+
+                                @if($product->badge)
+                                    <span class="product-badge badge-{{ $product->badge }}">
+                                        {{ ucfirst($product->badge) }}
+                                    </span>
+                                @endif
+
+                                <div class="product-actions">
+                                    <button class="btn-action btn-wishlist"><i class="bi bi-heart"></i></button>
+                                    <button class="btn-action btn-quick-view"><i class="bi bi-eye"></i></button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="product-info">
-                            <span class="product-brand">GLOW&CO</span>
-                            <h3 class="product-name">Vitamin C Brightening Serum 30ml</h3>
-                            <div class="product-rating mb-2">
-                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-                                <span>(128)</span>
+                            <div class="product-info">
+                                <span class="product-brand">GLOW&CO</span>
+                                <h3 class="product-name">{{ $product->name }}</h3>
+                                <div class="product-price">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </div>
+                                @auth
+                                    <form method="POST" action="{{ route('cart.store') }}">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn-add-cart">Tambah ke Keranjang</button>
+                                    </form>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn-add-cart">Tambah ke Keranjang</a>
+                                @endauth
                             </div>
-                            <div class="product-price">Rp 189.000</div>
-                            <button class="btn-add-cart">Tambah ke Keranjang</button>
                         </div>
                     </div>
-                </div>
-                <!-- Product 2 -->
-                <div class="col-6 col-lg-3 product-item" data-cat="cleanser" data-reveal>
-                    <div class="product-card">
-                        <div class="product-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?q=80&w=400" alt="Gentle Cleanser">
-                            <span class="product-badge badge-new">New</span>
-                            <div class="product-actions">
-                                <button class="btn-action btn-wishlist"><i class="bi bi-heart"></i></button>
-                                <button class="btn-action btn-quick-view"><i class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="product-info">
-                            <span class="product-brand">GLOW&CO</span>
-                            <h3 class="product-name">Gentle Foam Cleanser pH 5.5</h3>
-                            <div class="product-rating mb-2">
-                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                                <span>(96)</span>
-                            </div>
-                            <div class="product-price">Rp 129.000</div>
-                            <button class="btn-add-cart">Tambah ke Keranjang</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="col-6 col-lg-3 product-item" data-cat="moisturizer" data-reveal>
-                    <div class="product-card">
-                        <div class="product-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=400" alt="Moisturizer">
-                            <span class="product-badge badge-sale">Sale</span>
-                            <div class="product-actions">
-                                <button class="btn-action btn-wishlist"><i class="bi bi-heart"></i></button>
-                                <button class="btn-action btn-quick-view"><i class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="product-info">
-                            <span class="product-brand">GLOW&CO</span>
-                            <h3 class="product-name">Hyaluronic Acid Moisturizer Gel</h3>
-                            <div class="product-rating mb-2">
-                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
-                                <span>(74)</span>
-                            </div>
-                            <div class="product-price">Rp 159.000 <span class="product-price-old">Rp 220.000</span></div>
-                            <button class="btn-add-cart">Tambah ke Keranjang</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="col-6 col-lg-3 product-item" data-cat="serum" data-reveal>
-                    <div class="product-card">
-                        <div class="product-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=400" alt="Niacinamide">
-                            <div class="product-actions">
-                                <button class="btn-action btn-wishlist"><i class="bi bi-heart"></i></button>
-                                <button class="btn-action btn-quick-view"><i class="bi bi-eye"></i></button>
-                            </div>
-                        </div>
-                        <div class="product-info">
-                            <span class="product-brand">GLOW&CO</span>
-                            <h3 class="product-name">Niacinamide 10% + Zinc Serum</h3>
-                            <div class="product-rating mb-2">
-                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                                <span>(203)</span>
-                            </div>
-                            <div class="product-price">Rp 175.000</div>
-                            <button class="btn-add-cart">Tambah ke Keranjang</button>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
