@@ -18,7 +18,11 @@
                 <button class="btn-cart" data-bs-toggle="modal" data-bs-target="#cartModal">
                     <a href="{{ route('cart.index') }}" class="btn-cart">
                         <i class="bi bi-bag"></i>
-                        <span class="cart-badge" id="cartBadge">0</span>
+                        @if($cartCount > 0)
+                            <span class="cart-badge" id="cartBadge">{{ $cartCount }}</span>
+                        @else
+                            <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+                        @endif
                     </a>
                 </button>
 
@@ -57,7 +61,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('addresses.index') }}">
                                     <i class="bi bi-geo-alt"></i> Alamat Saya
                                 </a>
                             </li>

@@ -1,10 +1,10 @@
 @extends('layouts.admin')
+@use('Illuminate\Support\Facades\Storage')
 
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
 
 @section('content')
-
     {{-- Stats --}}
     <div class="row g-4 mb-4">
         <div class="col-6 col-lg-3">
@@ -12,9 +12,13 @@
                 <div class="stat-icon" style="background:rgba(139,111,94,0.1);color:var(--secondary)">
                     <i class="bi bi-bag-check-fill"></i>
                 </div>
-                <div class="stat-value">1,248</div>
+                <div class="stat-value">{{ number_format($totalOrders, 0, ',', '.') }}</div>
                 <div class="stat-label">Total Pesanan</div>
-                <div class="stat-change up"><i class="bi bi-arrow-up"></i> 12.5% bulan ini</div>
+                @if($pendingCount > 0)
+                    <div class="stat-change" style="color:#d4a3a3">
+                        <i class="bi bi-exclamation-circle"></i> {{ $pendingCount }} menunggu konfirmasi
+                    </div>
+                @endif
             </div>
         </div>
         <div class="col-6 col-lg-3">
@@ -22,9 +26,8 @@
                 <div class="stat-icon" style="background:rgba(168,181,160,0.15);color:var(--sage)">
                     <i class="bi bi-currency-dollar"></i>
                 </div>
-                <div class="stat-value">85.2M</div>
+                <div class="stat-value">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</div>
                 <div class="stat-label">Pendapatan</div>
-                <div class="stat-change up"><i class="bi bi-arrow-up"></i> 8.3% bulan ini</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
@@ -32,9 +35,8 @@
                 <div class="stat-icon" style="background:rgba(201,168,124,0.15);color:var(--accent)">
                     <i class="bi bi-box-seam-fill"></i>
                 </div>
-                <div class="stat-value">156</div>
+                <div class="stat-value">{{ number_format($totalProducts, 0, ',', '.') }}</div>
                 <div class="stat-label">Total Produk</div>
-                <div class="stat-change up"><i class="bi bi-arrow-up"></i> 5 produk baru</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
@@ -42,21 +44,21 @@
                 <div class="stat-icon" style="background:rgba(212,160,160,0.15);color:var(--rose)">
                     <i class="bi bi-people-fill"></i>
                 </div>
-                <div class="stat-value">3,842</div>
+                <div class="stat-value">{{ number_format($totalCustomers, 0, ',', '.') }}</div>
                 <div class="stat-label">Pelanggan</div>
-                <div class="stat-change up"><i class="bi bi-arrow-up"></i> 24 pelanggan baru</div>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-
         {{-- Recent Orders --}}
         <div class="col-lg-8">
             <div class="card-panel">
                 <div class="card-header-custom">
                     <h6>Pesanan Terbaru</h6>
-                    <a href="#" style="font-size:0.82rem;color:var(--secondary);text-decoration:none;font-weight:600">Lihat Semua</a>
+                    <a href="{{ route('admin.orders.index') }}" style="font-size:0.82rem;color:var(--secondary);text-decoration:none;font-weight:600">
+                        Lihat Semua
+                    </a>
                 </div>
                 <div class="card-body-custom">
                     <table class="table-clean">
@@ -70,41 +72,42 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#GC-1024</td>
-                                <td>Vitamin C Serum 30ml</td>
-                                <td>Dinda S.</td>
-                                <td>Rp 189.000</td>
-                                <td><span class="status-badge status-success">Dikirim</span></td>
-                            </tr>
-                            <tr>
-                                <td>#GC-1023</td>
-                                <td>Gentle Cleanser pH 5.5</td>
-                                <td>Rani M.</td>
-                                <td>Rp 129.000</td>
-                                <td><span class="status-badge status-pending">Diproses</span></td>
-                            </tr>
-                            <tr>
-                                <td>#GC-1022</td>
-                                <td>Niacinamide Serum 30ml</td>
-                                <td>Budi A.</td>
-                                <td>Rp 175.000</td>
-                                <td><span class="status-badge status-success">Dikirim</span></td>
-                            </tr>
-                            <tr>
-                                <td>#GC-1021</td>
-                                <td>HA Moisturizer Gel</td>
-                                <td>Maya K.</td>
-                                <td>Rp 159.000</td>
-                                <td><span class="status-badge status-cancelled">Dibatalkan</span></td>
-                            </tr>
-                            <tr>
-                                <td>#GC-1020</td>
-                                <td>Sunscreen SPF 50+</td>
-                                <td>Sari W.</td>
-                                <td>Rp 145.000</td>
-                                <td><span class="status-badge status-success">Dikirim</span></td>
-                            </tr>
+                            @forelse($recentOrders as $order)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('admin.orders.show', $order) }}" class="text-decoration-none fw-semibold" style="color:var(--secondary)">
+                                            {{ $order->order_number }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ $order->items->first()?->product_name }}
+                                        @if($order->items->count() > 1)
+                                            <span class="text-muted" style="font-size:0.78rem">
+                                                +{{ $order->items->count() - 1 }} lainnya
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $order->user->name }}</td>
+                                    <td>Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
+                                    <td>
+                                        @php
+                                            $statusColor = match($order->status) {
+                                                'pending'   => 'pending',
+                                                'paid', 'processed', 'shipped', 'completed' => 'success',
+                                                'cancelled' => 'cancelled',
+                                                default     => 'pending',
+                                            };
+                                        @endphp
+                                        <span class="status-badge status-{{ $statusColor }}">
+                                            {{ ucfirst($order->status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Belum ada pesanan.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -118,46 +121,27 @@
                     <h6>Produk Terlaris</h6>
                 </div>
                 <div class="card-body-custom">
-                    <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border)">
-                        <div style="width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center">
-                            <i class="bi bi-droplet-fill" style="color:var(--secondary)"></i>
+                    @forelse($topProducts as $product)
+                        <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border)">
+                            @if($product->image)
+                                <img src="{{ str_starts_with($product->image, 'http') ? $product->image : Storage::url($product->image) }}"
+                                    style="width:42px;height:42px;border-radius:10px;object-fit:cover">
+                            @else
+                                <div style="width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center">
+                                    <i class="bi bi-droplet-fill" style="color:var(--secondary)"></i>
+                                </div>
+                            @endif
+                            <div class="flex-grow-1">
+                                <div style="font-weight:600;font-size:0.88rem">{{ $product->product_name }}</div>
+                                <div style="font-size:0.75rem;color:#999">{{ $product->total_sold }} terjual</div>
+                            </div>
+                            <div style="font-weight:700;font-size:0.88rem;color:var(--secondary)">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </div>
                         </div>
-                        <div class="flex-grow-1">
-                            <div style="font-weight:600;font-size:0.88rem">Vitamin C Serum</div>
-                            <div style="font-size:0.75rem;color:#999">328 terjual</div>
-                        </div>
-                        <div style="font-weight:700;font-size:0.88rem;color:var(--secondary)">Rp 189K</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border)">
-                        <div style="width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center">
-                            <i class="bi bi-droplet-fill" style="color:var(--accent)"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div style="font-weight:600;font-size:0.88rem">Niacinamide Serum</div>
-                            <div style="font-size:0.75rem;color:#999">256 terjual</div>
-                        </div>
-                        <div style="font-weight:700;font-size:0.88rem;color:var(--secondary)">Rp 175K</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border)">
-                        <div style="width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center">
-                            <i class="bi bi-moisture" style="color:var(--rose)"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div style="font-weight:600;font-size:0.88rem">HA Moisturizer</div>
-                            <div style="font-size:0.75rem;color:#999">198 terjual</div>
-                        </div>
-                        <div style="font-weight:700;font-size:0.88rem;color:var(--secondary)">Rp 175K</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="width:42px;height:42px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center">
-                            <i class="bi bi-sun-fill" style="color:var(--sage)"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div style="font-weight:600;font-size:0.88rem">Sunscreen SPF 50+</div>
-                            <div style="font-size:0.75rem;color:#999">175 terjual</div>
-                        </div>
-                        <div style="font-weight:700;font-size:0.88rem;color:var(--secondary)">Rp 145K</div>
-                    </div>
+                    @empty
+                        <div class="text-center text-muted py-3">Belum ada penjualan.</div>
+                    @endforelse
                 </div>
             </div>
         </div>

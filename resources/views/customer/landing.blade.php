@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@use('Illuminate\Support\Facades\Storage')
 
 @section('title', 'GLOW&CO | Skincare & Beauty Online Shop')
 
@@ -150,10 +151,11 @@
                     <div class="col-6 col-lg-3 product-item" data-cat="{{ $product->category->slug }}" data-reveal>
                         <div class="product-card">
                             <div class="product-img-wrap">
-                                <img src="{{ $product->image && !str_starts_with($product->image, 'http')
-                                            ? Storage::url($product->image)
-                                            : $product->image }}" alt="{{ $product->name }}">
-
+                                <a href="{{ route('product.show', $product->slug) }}">
+                                    <img src="{{ $product->image && !str_starts_with($product->image, 'http')
+                                        ? Storage::url($product->image)
+                                        : $product->image }}" alt="{{ $product->name }}">
+                                 </a>
                                 @if($product->badge)
                                     <span class="product-badge badge-{{ $product->badge }}">
                                         {{ ucfirst($product->badge) }}
@@ -167,7 +169,9 @@
                             </div>
                             <div class="product-info">
                                 <span class="product-brand">GLOW&CO</span>
-                                <h3 class="product-name">{{ $product->name }}</h3>
+                                <a href="{{ route('product.show', $product->slug) }}" class="text-decoration-none">
+                                    <h3 class="product-name">{{ $product->name }}</h3>
+                                </a>
                                 <div class="product-price">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </div>

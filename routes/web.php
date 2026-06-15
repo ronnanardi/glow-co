@@ -3,8 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Shop\ProductController;
+use App\Http\Controllers\Shop\CheckoutController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Shop\AddressController;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 
@@ -16,6 +20,10 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('/categories', App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
     Route::resource('/products', App\Http\Controllers\Admin\ProductController::class)->except(['show']);
+    Route::resource('/orders', AdminOrderController::class)->only(['index', 'show']);
+    Route::post('/orders/{order}/confirm-payment', [AdminOrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
+    Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::post('/orders/{order}/shipment', [AdminOrderController::class, 'addShipment'])->name('orders.add-shipment');
 });
 
 Route::middleware('auth')->group(function () {
@@ -30,13 +38,27 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/{cartItem}', [App\Http\Controllers\Shop\CartController::class, 'destroy'])->name('cart.destroy');
 
     // Checkout
-    Route::get('/checkout', [App\Http\Controllers\Shop\CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [App\Http\Controllers\Shop\CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout/ongkir', [CheckoutController::class, 'checkOngkir'])->name('checkout.ongkir');
 
     // Orders
-     Route::get('/orders', [App\Http\Controllers\Shop\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders', [App\Http\Controllers\Shop\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [App\Http\Controllers\Shop\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/payment', [App\Http\Controllers\Shop\PaymentController::class, 'upload'])->name('orders.payment.upload');
+    Route::post('/orders/{order}/complete', [App\Http\Controllers\Shop\OrderController::class, 'complete'])->name('orders.complete');
+
+    // Alamat
+    Route::resource('/addresses', AddressController::class)->except(['show']);
+
+    // Destinasi
+    Route::get('/destinations/search', [App\Http\Controllers\Shop\DestinationController::class, 'search'])->name('destinations.search');
+
+    // Buy Now — langsung ke checkout dengan 1 produk
+    Route::post('/buy-now', [App\Http\Controllers\Shop\CartController::class, 'buyNow'])->name('cart.buy-now');
 });
+
+Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
 
 // -- debugging --
 Route::get('/cek-status', function () {

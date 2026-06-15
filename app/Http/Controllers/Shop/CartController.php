@@ -72,4 +72,42 @@ class CartController extends Controller
         $cartItem->delete();
         return back()->with('success', 'Produk berhasil dihapus dari keranjang.');
     }
+
+    public function buyNow(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity'   => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        if (!$product->isAvailable()) {
+            return back()->with('error', 'Produk tidak tersedia.');
+        }
+
+        if ($request->quantity > $product->stock) {
+            return back()->with('error', 'Stok tidak mencukupi.');
+        }
+
+        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+                            ->where('product_id', $product->id)
+                            ->first();
+
+        if ($cartItem) {
+            $cartItem->update(['quantity' => $request->quantity]);
+        } else {
+            CartItem::create([
+                'cart_id'    => $cart->id,
+                'product_id' => $product->id,
+                'quantity'   => $request->quantity,
+                'price'      => $product->price,
+            ]);
+        }
+
+        // Langsung ke checkout
+        return redirect()->route('checkout.index');
+    }
 }

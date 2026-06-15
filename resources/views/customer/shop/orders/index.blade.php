@@ -42,10 +42,20 @@
                     <span class="text-muted" style="font-size:0.85rem">
                         {{ $order->items->count() }} produk
                     </span>
-                    <a href="{{ route('orders.show', $order) }}"
-                       class="btn btn-sm btn-outline-secondary">
-                        Lihat Detail
-                    </a>
+                    <div class="d-flex gap-2">
+                        @if($order->status === 'shipped')
+                            <form method="POST" action="{{ route('orders.complete', $order) }}"
+                                onsubmit="return confirm('Konfirmasi pesanan sudah diterima?')">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-theme">
+                                    <i class="bi bi-check-circle me-1"></i> Pesanan Diterima
+                                </button>
+                            </form>
+                        @endif
+                        <a href="{{ route('orders.show', $order) }}" class="btn btn-sm btn-outline-secondary">
+                            Lihat Detail
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

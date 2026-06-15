@@ -9,12 +9,16 @@ class Order extends Model
     //
     protected $fillable = [
         'user_id', 'address_id', 'order_number', 'total_price',
-        'status', 'payment_method', 'paid_at'
+        'shipping_cost', 'courier', 'courier_service',
+        'status', 'payment_method', 'payment_proof', 'paid_at',
+        'completed_at',
     ];
 
     protected $casts = [
-        'total_price' => 'decimal:2',
-        'paid_at'     => 'datetime',
+        'total_price'   => 'decimal:2',
+        'shipping_cost' => 'decimal:2',
+        'paid_at'       => 'datetime',
+        'completed_at'  => 'datetime',
     ];
 
     // Status constants
