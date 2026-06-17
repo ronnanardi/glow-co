@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-lg-6 mt-5 mt-lg-0" data-reveal>
                     <div class="hero-image-wrap">
-                        <img src="assets/hero.png" alt="Skincare Hero" class="img-fluid">
+                        <img src="{{ asset('images/hero.png') }}" alt="Skincare Hero" class="img-fluid">
                         <div class="hero-float-card card-1">
                             <div class="fc-label">Best Seller</div>
                             <div class="fc-value">Glow Serum</div>

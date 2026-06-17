@@ -8,7 +8,15 @@ use App\Http\Controllers\Shop\CheckoutController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Shop\AddressController;
+use App\Http\Controllers\Admin\StockReportController;
+use App\Http\Controllers\Admin\SalesReportController;
+use App\Http\Controllers\Admin\ShipmentController;
+use App\Http\Controllers\Shop\ReviewController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 
@@ -24,6 +32,17 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/orders/{order}/confirm-payment', [AdminOrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('/orders/{order}/shipment', [AdminOrderController::class, 'addShipment'])->name('orders.add-shipment');
+    Route::resource('/vouchers', VoucherController::class)->except(['show']);
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+    Route::get('/stock-report', [StockReportController::class, 'index'])->name('stock-report.index');
+    Route::patch('/stock-report/{product}', [StockReportController::class, 'updateStock'])->name('stock-report.update');
+    Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales-report.index');
+    Route::get('/sales-report/export-excel', [SalesReportController::class, 'exportExcel'])->name('sales-report.export-excel');
+    Route::get('/sales-report/export-pdf', [SalesReportController::class, 'exportPdf'])->name('sales-report.export-pdf');
+    Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
 });
 
 Route::middleware('auth')->group(function () {
@@ -41,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/checkout/ongkir', [CheckoutController::class, 'checkOngkir'])->name('checkout.ongkir');
+    Route::post('/checkout/voucher', [CheckoutController::class, 'applyVoucher'])->name('checkout.voucher');
 
     // Orders
     Route::get('/orders', [App\Http\Controllers\Shop\OrderController::class, 'index'])->name('orders.index');
@@ -56,6 +76,10 @@ Route::middleware('auth')->group(function () {
 
     // Buy Now — langsung ke checkout dengan 1 produk
     Route::post('/buy-now', [App\Http\Controllers\Shop\CartController::class, 'buyNow'])->name('cart.buy-now');
+
+    // Review
+    Route::get('/reviews/{orderItem}/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/reviews/{orderItem}', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');

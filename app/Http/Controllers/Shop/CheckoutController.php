@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Voucher;
 use App\Services\RajaOngkirService;
 
 
@@ -50,48 +51,91 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-        'address_id'      => 'required|exists:addresses,id',
-        'payment_method'  => 'required|string',
-        'courier'         => 'required|string',
-        'courier_service' => 'required|string',
-        'shipping_cost'   => 'required|numeric',
-    ]);
-
-    $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
-
-    if (!$cart || $cart->items->isEmpty()) {
-        return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong.');
-    }
-
-    DB::transaction(function () use ($request, $cart) {
-
-        $order = Order::create([
-            'user_id'         => Auth::id(),
-            'address_id'      => $request->address_id,
-            'total_price'     => $cart->total + $request->shipping_cost,
-            'shipping_cost'   => $request->shipping_cost,
-            'courier'         => $request->courier,
-            'courier_service' => $request->courier_service,
-            'status'          => Order::STATUS_PENDING,
-            'payment_method'  => $request->payment_method,
+            'address_id'      => 'required|exists:addresses,id',
+            'payment_method'  => 'required|string',
+            'courier'         => 'required|string',
+            'courier_service' => 'required|string',
+            'shipping_cost'   => 'required|numeric',
+            'voucher_code'    => 'nullable|string',
+            'discount'        => 'nullable|numeric',
         ]);
 
-        foreach ($cart->items as $item) {
-            OrderItem::create([
-                'order_id'     => $order->id,
-                'product_id'   => $item->product_id,
-                'product_name' => $item->product->name,
-                'price'        => $item->price,
-                'quantity'     => $item->quantity,
-                'subtotal'     => $item->price * $item->quantity,
-            ]);
+        $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
 
-            $item->product->decrement('stock', $item->quantity);
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong.');
         }
 
-        $cart->items()->delete();
-    });
+        DB::transaction(function () use ($request, $cart) {
 
-    return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibuat!');
+            $discount = $request->discount ?? 0;
+            $total    = $cart->total + $request->shipping_cost - $discount;
+
+            $order = Order::create([
+                'user_id'         => Auth::id(),
+                'address_id'      => $request->address_id,
+                'total_price'     => $total,
+                'shipping_cost'   => $request->shipping_cost,
+                'courier'         => $request->courier,
+                'courier_service' => $request->courier_service,
+                'voucher_code'    => $request->voucher_code,
+                'discount'        => $discount,
+                'status'          => Order::STATUS_PENDING,
+                'payment_method'  => $request->payment_method,
+            ]);
+
+            foreach ($cart->items as $item) {
+                OrderItem::create([
+                    'order_id'     => $order->id,
+                    'product_id'   => $item->product_id,
+                    'product_name' => $item->product->name,
+                    'price'        => $item->price,
+                    'quantity'     => $item->quantity,
+                    'subtotal'     => $item->price * $item->quantity,
+                ]);
+
+                $item->product->decrement('stock', $item->quantity);
+            }
+
+            // Increment used_count voucher
+            if ($request->voucher_code) {
+                \App\Models\Voucher::where('code', $request->voucher_code)->increment('used_count');
+            }
+
+            $cart->items()->delete();
+        });
+
+        return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibuat!');
+    }
+
+    public function applyVoucher(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $voucher = Voucher::where('code', strtoupper($request->code))->first();
+
+        if (!$voucher) {
+            return response()->json(['success' => false, 'message' => 'Kode voucher tidak ditemukan.']);
+        }
+
+        $cart     = Cart::with('items')->where('user_id', Auth::id())->first();
+        $subtotal = $cart->total;
+
+        [$valid, $message] = $voucher->isValid($subtotal);
+
+        if (!$valid) {
+            return response()->json(['success' => false, 'message' => $message]);
+        }
+
+        $discount = $voucher->calculateDiscount($subtotal);
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Voucher berhasil digunakan!',
+            'code'     => $voucher->code,
+            'discount' => $discount,
+        ]);
     }
 }

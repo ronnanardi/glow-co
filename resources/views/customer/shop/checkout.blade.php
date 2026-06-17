@@ -97,6 +97,21 @@
                     </div>
                 </div>
 
+                {{-- Kode Voucher --}}
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Kode Voucher</h6>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="voucherInput" class="form-control" placeholder="Masukkan kode voucher">
+                            <button type="button" class="btn btn-outline-secondary" onclick="applyVoucher()">Pakai</button>
+                        </div>
+                        <div id="voucherMessage" class="mt-2" style="font-size:0.85rem"></div>
+
+                        <input type="hidden" name="voucher_code" id="appliedVoucherCode">
+                        <input type="hidden" name="discount" id="appliedDiscount" value="0">
+                    </div>
+                </div>
+
                 {{-- Metode Pembayaran --}}
                 <div class="card border-0 shadow-sm rounded-3">
                     <div class="card-body p-4">
@@ -138,6 +153,10 @@
                         <div class="d-flex justify-content-between mb-2" style="font-size:0.88rem">
                             <span class="text-muted">Ongkos Kirim</span>
                             <span id="ongkirDisplay" class="text-muted">— Pilih kurir dulu</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display:none">
+                            <span class="text-muted">Diskon</span>
+                            <span id="discountDisplay" class="text-danger">- Rp 0</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-4">
@@ -249,6 +268,53 @@
             'Rp ' + total.toLocaleString('id-ID');
         document.getElementById('ongkirDisplay').innerText =
             'Rp ' + ongkir.toLocaleString('id-ID');
+    }
+
+    let currentDiscount = 0;
+
+    function applyVoucher() {
+        const code = document.getElementById('voucherInput').value.trim();
+        const msgEl = document.getElementById('voucherMessage');
+
+        if (!code) return;
+
+        fetch('{{ route("checkout.voucher") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                currentDiscount = data.discount;
+                document.getElementById('appliedVoucherCode').value = data.code;
+                document.getElementById('appliedDiscount').value = data.discount;
+
+                msgEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> ${data.message}</span>`;
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountDisplay').innerText = '- Rp ' + data.discount.toLocaleString('id-ID');
+            } else {
+                currentDiscount = 0;
+                document.getElementById('appliedVoucherCode').value = '';
+                document.getElementById('appliedDiscount').value = 0;
+                document.getElementById('discountRow').style.display = 'none';
+
+                msgEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${data.message}</span>`;
+            }
+            updateTotal();
+        });
+    }
+
+    function updateTotal() {
+        const ongkir   = parseInt(document.getElementById('selectedShippingCost').value) || 0;
+        const subtotal = {{ $cart->total }};
+        const total    = subtotal + ongkir - currentDiscount;
+
+        document.getElementById('totalDisplay').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        document.getElementById('ongkirDisplay').innerText = 'Rp ' + ongkir.toLocaleString('id-ID');
     }
 </script>
 @endsection

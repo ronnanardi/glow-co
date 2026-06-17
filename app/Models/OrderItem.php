@@ -29,4 +29,9 @@ class OrderItem extends Model
             'name' => $this->product_name // fallback jika produk dihapus
         ]);
     }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
 }

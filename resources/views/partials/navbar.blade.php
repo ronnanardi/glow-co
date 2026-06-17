@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="{{ url('/') }}">
             <div class="brand-logo">GLOW<span>&CO</span></div>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -8,11 +8,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="#categories">Kategori</a></li>
-                <li class="nav-item"><a class="nav-link" href="#products">Produk</a></li>
-                <li class="nav-item"><a class="nav-link" href="#promo">Promo</a></li>
-                <li class="nav-item"><a class="nav-link" href="#testimonials">Review</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#home">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#categories">Kategori</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#products">Produk</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#promo">Promo</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#testimonials">Review</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3">
                 <button class="btn-cart" data-bs-toggle="modal" data-bs-target="#cartModal">

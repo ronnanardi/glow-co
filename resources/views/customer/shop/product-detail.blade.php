@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@use('Illuminate\Support\Facades\Storage')
 
 @section('title', $product->name)
 
@@ -159,6 +160,46 @@
 
         </div>
 
+        {{-- Rating Summary --}}
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <div style="color:#C9A87C">
+                @for($i = 1; $i <= 5; $i++)
+                    <i class="bi bi-star{{ $i <= round($product->avg_rating) ? '-fill' : '' }}"></i>
+                @endfor
+            </div>
+            <span class="fw-semibold">{{ number_format($product->avg_rating, 1) }}</span>
+            <span class="text-muted">({{ $product->reviews_count }} ulasan)</span>
+        </div>
+
+    </div>
+
+    {{-- Ulasan Produk --}}
+    <div class="mt-5 pt-4" style="border-top:1px solid #eee">
+        <h5 class="fw-bold mb-4">Ulasan Pembeli ({{ $product->reviews_count }})</h5>
+
+        @if($product->reviews()->count() > 0)
+            @foreach($product->reviews()->with('user')->latest()->take(10)->get() as $review)
+                <div class="d-flex gap-3 mb-4 pb-4" style="border-bottom:1px solid #f0f0f0">
+                    <div class="user-avatar" style="width:42px;height:42px;flex-shrink:0">
+                        {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">{{ $review->user->name }}</div>
+                        <div style="color:#C9A87C;font-size:0.85rem" class="mb-1">
+                            @for($i = 1; $i <= 5; $i++)
+                                <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                            @endfor
+                        </div>
+                        @if($review->comment)
+                            <p class="text-muted mb-1" style="font-size:0.9rem">{{ $review->comment }}</p>
+                        @endif
+                        <span class="text-muted" style="font-size:0.78rem">{{ $review->created_at->format('d M Y') }}</span>
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <p class="text-muted">Belum ada ulasan untuk produk ini.</p>
+        @endif
     </div>
 
     {{-- Produk Terkait --}}

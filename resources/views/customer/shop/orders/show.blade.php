@@ -74,6 +74,17 @@
                                 <div class="text-muted" style="font-size:0.85rem">
                                     Rp {{ number_format($item->price, 0, ',', '.') }} x {{ $item->quantity }}
                                 </div>
+                                 @if($order->status === 'completed')
+                                    @if($item->review)
+                                        <span class="text-success" style="font-size:0.8rem">
+                                            <i class="bi bi-check-circle"></i> Sudah direview
+                                        </span>
+                                    @else
+                                        <a href="{{ route('reviews.create', $item) }}" class="btn btn-sm btn-outline-secondary mt-1">
+                                            <i class="bi bi-star me-1"></i> Beri Review
+                                        </a>
+                                    @endif
+                                @endif
                             </div>
                             <div class="fw-bold" style="color:#9A7B67">
                                 Rp {{ number_format($item->subtotal, 0, ',', '.') }}

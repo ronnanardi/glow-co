@@ -15,7 +15,7 @@
         <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bi bi-bag-check"></i> Pesanan
         </a>
-        <a href="#" class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.customers.index') }}" class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
             <i class="bi bi-people"></i> Pelanggan
         </a>
 
@@ -24,23 +24,27 @@
             <i class="bi bi-tags"></i> Kategori
         </a>
 
-        <a href="#"><i class="bi bi-percent"></i> Promo & Voucher</a>
-        <a href="#"><i class="bi bi-star"></i> Review</a>
-        <a href="#"><i class="bi bi-truck"></i> Pengiriman</a>
+        <a href="{{ route('admin.vouchers.index') }}" class="{{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
+            <i class="bi bi-percent"></i> Promo & Voucher
+        </a>
+        <a href="{{ route('admin.reviews.index') }}" class="{{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+            <i class="bi bi-star"></i> Review
+        </a>
+        <a href="{{ route('admin.shipments.index') }}" class="{{ request()->routeIs('admin.shipments.*') ? 'active' : '' }}">
+            <i class="bi bi-truck"></i> Pengiriman
+        </a>
 
         <div class="menu-label mt-3">Laporan</div>
-        <a href="#"><i class="bi bi-graph-up"></i> Statistik Penjualan</a>
-        <a href="#"><i class="bi bi-clipboard-data"></i> Laporan Stok</a>
+        <a href="{{ route('admin.sales-report.index') }}" class="{{ request()->routeIs('admin.sales-report.*') ? 'active' : '' }}">
+            <i class="bi bi-graph-up"></i> Statistik Penjualan
+        </a>
+        <a href="{{ route('admin.stock-report.index') }}" class="{{ request()->routeIs('admin.stock-report.*') ? 'active' : '' }}">
+            <i class="bi bi-clipboard-data"></i> Laporan Stok
+        </a>
 
         <div class="menu-label mt-3">Lainnya</div>
         <a href="#"><i class="bi bi-gear"></i> Pengaturan</a>
         <a href="{{ route('home') }}"><i class="bi bi-house"></i> Lihat Toko</a>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-2">
-            @csrf
-            <button type="submit" class="w-100 text-start border-0 bg-transparent sidebar-logout">
-                <i class="bi bi-box-arrow-left"></i> Logout
-            </button>
-        </form>
     </nav>
 </aside>

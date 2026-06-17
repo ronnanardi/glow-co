@@ -9,7 +9,8 @@ class Product extends Model
     //
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
-        'price', 'stock', 'image', 'is_active'
+        'price', 'stock', 'image', 'is_active',
+        'avg_rating', 'reviews_count',
     ];
 
     protected $casts = [
@@ -43,5 +44,18 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function updateRatingCache(): void
+    {
+        $this->update([
+            'avg_rating'    => $this->reviews()->avg('rating') ?? 0,
+            'reviews_count' => $this->reviews()->count(),
+        ]);
     }
 }
