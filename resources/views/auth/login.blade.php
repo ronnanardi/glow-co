@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Glow&Co</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
-<body>
+<body class="auth-body">
 
 <div class="container py-5 min-vh-100 d-flex align-items-center">
     <div class="card auth-card w-100">
@@ -15,13 +17,13 @@
 
             <!-- KIRI -->
             <div class="col-lg-6 left-panel d-flex flex-column justify-content-center">
-                <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="{{ url('/') }}">
                     <div class="brand-logo">GLOW<span>&CO</span></div>
                 </a>
                 <h1 class="hero-title">
                     Raih Kulit <span>Glowing</span> Impianmu
                 </h1>
-                <p class="text-secondary mt-4">
+                <p class="mt-4">
                     Masuk untuk melihat promo eksklusif dan produk skincare premium terbaik.
                 </p>
             </div>
@@ -72,7 +74,7 @@
 
                     <div class="text-center mt-4">
                         Belum punya akun?
-                        <a href="{{ route('register') }}" class="text-decoration-none fw-semibold" style="color:#9A7B67">
+                        <a href="{{ route('register') }}" class="text-decoration-none fw-semibold">
                             Daftar
                         </a>
                     </div>

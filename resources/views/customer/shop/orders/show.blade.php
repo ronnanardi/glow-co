@@ -151,7 +151,7 @@
                         </div>
 
                         <div class="row g-3 mb-3">
-                            @foreach(config('payment.bank_accounts') as $bank)
+                            @foreach(json_decode(\App\Models\Setting::get('bank_accounts', '[]'), true) as $bank)
                                 <div class="col-md-6">
                                     <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center">
                                         <div>

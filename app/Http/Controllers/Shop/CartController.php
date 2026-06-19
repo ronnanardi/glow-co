@@ -29,25 +29,52 @@ class CartController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         if (!$product->isAvailable()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Produk tidak tersedia.']);
+            }
             return back()->with('error', 'Produk tidak tersedia.');
         }
 
-        // Ambil atau buat keranjang user
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
 
-        // Cek apakah produk sudah ada di keranjang
         $cartItem = CartItem::where('cart_id', $cart->id)
                             ->where('product_id', $product->id)
                             ->first();
 
+        $existingQty  = $cartItem ? $cartItem->quantity : 0;
+        $requestedQty = $existingQty + $request->quantity;
+
+        if ($requestedQty > $product->stock) {
+            $sisa = $product->stock - $existingQty;
+            $msg  = $sisa <= 0
+                ? "Stok {$product->name} sudah maksimal di keranjang."
+                : "Maksimal bisa tambah {$sisa} lagi (stok: {$product->stock}).";
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg]);
+            }
+            return back()->with('error', $msg);
+        }
+
         if ($cartItem) {
-            $cartItem->increment('quantity', $request->quantity);
+            $cartItem->update(['quantity' => $requestedQty]);
         } else {
             CartItem::create([
                 'cart_id'    => $cart->id,
                 'product_id' => $product->id,
                 'quantity'   => $request->quantity,
                 'price'      => $product->price,
+            ]);
+        }
+
+        $cart->load('items');
+        $cartCount = $cart->items->sum('quantity');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'   => true,
+                'message'   => 'Produk berhasil ditambahkan ke keranjang.',
+                'cartCount' => $cartCount,
             ]);
         }
 
@@ -60,6 +87,11 @@ class CartController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1',
         ]);
+
+        if ($request->quantity > $cartItem->product->stock) {
+            return back()->with('error',
+                "Stok {$cartItem->product->name} hanya tersisa {$cartItem->product->stock}.");
+        }
 
         $cartItem->update(['quantity' => $request->quantity]);
 

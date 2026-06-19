@@ -172,18 +172,43 @@
                                 <a href="{{ route('product.show', $product->slug) }}" class="text-decoration-none">
                                     <h3 class="product-name">{{ $product->name }}</h3>
                                 </a>
+                                {{-- Rating --}}
+                                <div class="product-rating mb-2">
+                                    @if($product->reviews_count > 0)
+                                        @php $rating = round($product->avg_rating); @endphp
+                                        @for($i = 1; $i <= 5; $i++)
+                                            @if($i <= $rating)
+                                                <i class="bi bi-star-fill"></i>
+                                            @elseif($i - 0.5 <= $product->avg_rating)
+                                                <i class="bi bi-star-half"></i>
+                                            @else
+                                                <i class="bi bi-star"></i>
+                                            @endif
+                                        @endfor
+                                        <span>({{ $product->reviews_count }})</span>
+                                    @else
+                                        <i class="bi bi-star text-muted"></i>
+                                        <i class="bi bi-star text-muted"></i>
+                                        <i class="bi bi-star text-muted"></i>
+                                        <i class="bi bi-star text-muted"></i>
+                                        <i class="bi bi-star text-muted"></i>
+                                        <span class="text-muted" style="font-size:0.78rem">Belum ada ulasan</span>
+                                    @endif
+                                </div>
+
                                 <div class="product-price">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </div>
                                 @auth
-                                    <form method="POST" action="{{ route('cart.store') }}">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn-add-cart">Tambah ke Keranjang</button>
-                                    </form>
+                                    <button class="btn-add-cart"
+                                            data-product-id="{{ $product->id }}"
+                                            onclick="addToCart({{ $product->id }}, this)">
+                                        Tambah ke Keranjang
+                                    </button>
                                 @else
-                                    <a href="{{ route('login') }}" class="btn-add-cart">Tambah ke Keranjang</a>
+                                    <a href="{{ route('login') }}" class="btn-add-cart d-block text-center text-decoration-none">
+                                        Tambah ke Keranjang
+                                    </a>
                                 @endauth
                             </div>
                         </div>
@@ -226,53 +251,114 @@
     </section>
 
     <!-- Testimonials -->
-    <section id="testimonials">
+        <section id="testimonials">
         <div class="container">
             <div class="text-center mb-5" data-reveal>
                 <span class="section-tag">Testimoni</span>
                 <h2 class="section-title">Apa Kata <span>Mereka</span></h2>
             </div>
-            <div class="row g-4">
-                <div class="col-md-4" data-reveal>
-                    <div class="testimonial-card">
-                        <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-                        <p class="quote">"Serumnya ringan banget, cepat meresap dan bikin kulit glowing dalam 2 minggu pemakaian. Love it!"</p>
-                        <div class="reviewer">
-                            <img src="https://i.pravatar.cc/150?u=skincare1" alt="User" class="reviewer-avatar">
-                            <div>
-                                <div class="reviewer-name">Dinda Safitri</div>
-                                <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
+
+            @if($testimonials->isNotEmpty())
+                <div class="row g-4">
+                    @foreach($testimonials as $review)
+                        <div class="col-md-4" data-reveal>
+                            <div class="testimonial-card">
+
+                                {{-- Bintang --}}
+                                <div class="stars">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="bi bi-star{{ $i <= $review->rating ? '-fill' : '' }}"></i>
+                                    @endfor
+                                </div>
+
+                                {{-- Komentar --}}
+                                <p class="quote">"{{ $review->comment }}"</p>
+
+                                {{-- Reviewer --}}
+                                <div class="reviewer">
+                                    @if($review->user->avatar)
+                                        <img src="{{ Storage::url($review->user->avatar) }}"
+                                            alt="{{ $review->user->name }}"
+                                            class="reviewer-avatar">
+                                    @else
+                                        <div class="reviewer-avatar d-flex align-items-center justify-content-center fw-bold"
+                                            style="background:#9A7B67;color:white;font-size:1.1rem">
+                                            {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <div class="reviewer-name">{{ $review->user->name }}</div>
+                                        <div class="reviewer-tag">
+                                            Verified Buyer
+                                            <i class="bi bi-patch-check-fill verified"></i>
+                                        </div>
+                                        <div class="text-muted" style="font-size:0.75rem">
+                                            {{ $review->product->name ?? '' }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                {{-- Fallback statis kalau belum ada review --}}
+                <div class="row g-4">
+                    <div class="col-md-4" data-reveal>
+                        <div class="testimonial-card">
+                            <div class="stars">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <p class="quote">"Serumnya ringan banget, cepat meresap dan bikin kulit glowing dalam 2 minggu pemakaian. Love it!"</p>
+                            <div class="reviewer">
+                                <img src="https://i.pravatar.cc/150?u=skincare1" alt="User" class="reviewer-avatar">
+                                <div>
+                                    <div class="reviewer-name">Dinda Safitri</div>
+                                    <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-reveal>
+                        <div class="testimonial-card">
+                            <div class="stars">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <p class="quote">"Cleanser-nya gentle banget di kulit sensitif aku. Udah repurchase 3x. Packaging-nya juga cantik!"</p>
+                            <div class="reviewer">
+                                <img src="https://i.pravatar.cc/150?u=skincare2" alt="User" class="reviewer-avatar">
+                                <div>
+                                    <div class="reviewer-name">Rani Maharani</div>
+                                    <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-reveal>
+                        <div class="testimonial-card">
+                            <div class="stars">
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                            <p class="quote">"Moisturizer gel-nya bikin kulit kenyal seharian. Nggak lengket sama sekali, cocok buat cuaca tropis!"</p>
+                            <div class="reviewer">
+                                <img src="https://i.pravatar.cc/150?u=skincare3" alt="User" class="reviewer-avatar">
+                                <div>
+                                    <div class="reviewer-name">Maya Anggraini</div>
+                                    <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4" data-reveal>
-                    <div class="testimonial-card">
-                        <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-                        <p class="quote">"Cleanser-nya gentle banget di kulit sensitif aku. Udah repurchase 3x. Packaging-nya juga cantik!"</p>
-                        <div class="reviewer">
-                            <img src="https://i.pravatar.cc/150?u=skincare2" alt="User" class="reviewer-avatar">
-                            <div>
-                                <div class="reviewer-name">Rani Maharani</div>
-                                <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4" data-reveal>
-                    <div class="testimonial-card">
-                        <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></div>
-                        <p class="quote">"Moisturizer gel-nya bikin kulit kenyal seharian. Nggak lengket sama sekali, cocok buat cuaca tropis!"</p>
-                        <div class="reviewer">
-                            <img src="https://i.pravatar.cc/150?u=skincare3" alt="User" class="reviewer-avatar">
-                            <div>
-                                <div class="reviewer-name">Maya Anggraini</div>
-                                <div class="reviewer-tag">Verified Buyer <i class="bi bi-patch-check-fill verified"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endif
+
         </div>
     </section>
 

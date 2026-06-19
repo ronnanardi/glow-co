@@ -18,6 +18,26 @@
   --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+.avatar-wrapper {
+    cursor: pointer;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 90px; height: 90px;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
 .user-avatar {
     width: 36px;
     height: 36px;

@@ -43,7 +43,9 @@
         </a>
 
         <div class="menu-label mt-3">Lainnya</div>
-        <a href="#"><i class="bi bi-gear"></i> Pengaturan</a>
+        <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+            <i class="bi bi-gear"></i> Pengaturan
+        </a>
         <a href="{{ route('home') }}"><i class="bi bi-house"></i> Lihat Toko</a>
 
     </nav>

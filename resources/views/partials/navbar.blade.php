@@ -38,7 +38,12 @@
                                 Halo, {{ auth()->user()->name }}
                             </span>
                             <div class="user-avatar">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                @if(auth()->user()->avatar)
+                                    <img src="{{ Storage::url(auth()->user()->avatar) }}"
+                                        style="width:36px;height:36px;border-radius:50%;object-fit:cover">
+                                @else
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                @endif
                             </div>
                             <i class="bi bi-chevron-down" style="font-size:0.75rem;color:#999"></i>
                         </button>
@@ -51,9 +56,11 @@
                                 </div>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
-                                    <i class="bi bi-person"></i> Profil Saya
-                                </a>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('profile.edit') }}">
+                                        <i class="bi bi-person"></i> Profil Saya
+                                    </a>
+                                </li>
                             </li>
                             <li>
                                  <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('orders.index') }}">

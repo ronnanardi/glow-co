@@ -33,9 +33,7 @@ class Order extends Model
     protected static function booted()
     {
         static::creating(function ($order) {
-            $order->order_number = 'ORD-' . now()->format('Ymd') . '-' . str_pad(
-                static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT
-            );
+            $order->order_number = 'ORD-' . now()->format('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
         });
     }
 

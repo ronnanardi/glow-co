@@ -78,12 +78,21 @@
                 </div>
                 <div class="card-body-custom">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="user-avatar" style="width:50px;height:50px;font-size:1.2rem">
-                            {{ strtoupper(substr($customer->name, 0, 1)) }}
+                        <div style="flex-shrink:0">
+                            @if($customer->avatar)
+                                <img src="{{ Storage::url($customer->avatar) }}"
+                                    style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--border)">
+                            @else
+                                <div class="user-avatar" style="width:50px;height:50px;font-size:1.2rem">
+                                    {{ strtoupper(substr($customer->name, 0, 1)) }}
+                                </div>
+                            @endif
                         </div>
                         <div>
                             <div class="fw-bold">{{ $customer->name }}</div>
-                            <div class="text-muted" style="font-size:0.82rem">Bergabung {{ $customer->created_at->format('d M Y') }}</div>
+                            <div class="text-muted" style="font-size:0.82rem">
+                                Bergabung {{ $customer->created_at->format('d M Y') }}
+                            </div>
                         </div>
                     </div>
                     <div class="row g-2" style="font-size:0.88rem">

@@ -6,6 +6,7 @@ use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,22 +23,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
-        {
-            // Share cart count ke semua view
-            View::composer('*', function ($view) {
-                if (Auth::check() && Auth::user()->role === 'customer') {
-                    $cart = Cart::with('items')
-                                ->where('user_id', Auth::id())
-                                ->first();
+        // Share cart count ke semua view
+        View::composer('*', function ($view) {
+            if (Auth::check() && Auth::user()->role === 'customer') {
+                $cart = Cart::with('items')
+                    ->where('user_id', Auth::id())
+                    ->first();
+                $cartCount = $cart ? $cart->items->sum('quantity') : 0;
+            } else {
+                $cartCount = 0;
+            }
 
-                    $cartCount = $cart ? $cart->items->sum('quantity') : 0;
-                } else {
-                    $cartCount = 0;
-                }
+            $view->with('cartCount', $cartCount);
+        });
 
-                $view->with('cartCount', $cartCount);
-            });
-        }
+        Paginator::useBootstrapFive();
     }
 }

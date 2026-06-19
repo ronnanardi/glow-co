@@ -180,8 +180,15 @@
         @if($product->reviews()->count() > 0)
             @foreach($product->reviews()->with('user')->latest()->take(10)->get() as $review)
                 <div class="d-flex gap-3 mb-4 pb-4" style="border-bottom:1px solid #f0f0f0">
-                    <div class="user-avatar" style="width:42px;height:42px;flex-shrink:0">
-                        {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                    <div style="flex-shrink:0">
+                        @if($review->user->avatar)
+                            <img src="{{ Storage::url($review->user->avatar) }}"
+                                style="width:42px;height:42px;border-radius:50%;object-fit:cover">
+                        @else
+                            <div class="user-avatar" style="width:42px;height:42px">
+                                {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                            </div>
+                        @endif
                     </div>
                     <div>
                         <div class="fw-semibold">{{ $review->user->name }}</div>

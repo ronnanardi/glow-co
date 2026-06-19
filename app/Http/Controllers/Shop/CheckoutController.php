@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;
@@ -57,7 +58,6 @@ class CheckoutController extends Controller
             'courier_service' => 'required|string',
             'shipping_cost'   => 'required|numeric',
             'voucher_code'    => 'nullable|string',
-            'discount'        => 'nullable|numeric',
         ]);
 
         $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
@@ -66,10 +66,29 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong.');
         }
 
-        DB::transaction(function () use ($request, $cart) {
+        foreach ($cart->items as $item) {
+            if ($item->quantity > $item->product->stock) {
+                return redirect()->route('cart.index')->with('error',
+                    "Stok {$item->product->name} tidak cukup (tersisa {$item->product->stock}).");
+            }
+        }
 
-            $discount = $request->discount ?? 0;
-            $total    = $cart->total + $request->shipping_cost - $discount;
+        // Hitung ulang diskon di server, JANGAN percaya nilai dari request
+        $discount = 0;
+        if ($request->voucher_code) {
+            $voucher = \App\Models\Voucher::where('code', $request->voucher_code)->first();
+
+            if ($voucher) {
+                [$valid, $message] = $voucher->isValid($cart->total);
+                if ($valid) {
+                    $discount = $voucher->calculateDiscount($cart->total);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($request, $cart, $discount) {
+
+            $total = $cart->total + $request->shipping_cost - $discount;
 
             $order = Order::create([
                 'user_id'         => Auth::id(),
@@ -78,13 +97,19 @@ class CheckoutController extends Controller
                 'shipping_cost'   => $request->shipping_cost,
                 'courier'         => $request->courier,
                 'courier_service' => $request->courier_service,
-                'voucher_code'    => $request->voucher_code,
+                'voucher_code'    => $discount > 0 ? $request->voucher_code : null,
                 'discount'        => $discount,
                 'status'          => Order::STATUS_PENDING,
                 'payment_method'  => $request->payment_method,
             ]);
 
             foreach ($cart->items as $item) {
+                $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+
+                if ($item->quantity > $product->stock) {
+                    throw new \Exception("Stok {$product->name} tidak cukup.");
+                }
+
                 OrderItem::create([
                     'order_id'     => $order->id,
                     'product_id'   => $item->product_id,
@@ -94,11 +119,10 @@ class CheckoutController extends Controller
                     'subtotal'     => $item->price * $item->quantity,
                 ]);
 
-                $item->product->decrement('stock', $item->quantity);
+                $product->decrement('stock', $item->quantity);
             }
 
-            // Increment used_count voucher
-            if ($request->voucher_code) {
+            if ($discount > 0 && $request->voucher_code) {
                 \App\Models\Voucher::where('code', $request->voucher_code)->increment('used_count');
             }
 

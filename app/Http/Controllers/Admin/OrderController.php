@@ -38,19 +38,27 @@ class OrderController extends Controller
     // Update status order
     public function updateStatus(Request $request, Order $order)
     {
-        $request->validate([
-            'status' => 'required|in:processed,shipped,cancelled', // hapus 'completed'
+         $request->validate([
+            'status' => 'required|in:processed,shipped,cancelled',
         ]);
 
-        // Cegah skip status (misal pending langsung jadi shipped)
         $allowedTransitions = [
             'paid'      => ['processed', 'cancelled'],
             'processed' => ['shipped', 'cancelled'],
-            'shipped'   => [], // hanya customer yang bisa ubah ke completed
+            'shipped'   => [],
         ];
 
         if (!in_array($request->status, $allowedTransitions[$order->status] ?? [])) {
             return back()->with('error', 'Perubahan status tidak valid.');
+        }
+
+        // Kembalikan stok kalau dibatalkan
+        if ($request->status === 'cancelled') {
+            foreach ($order->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
         }
 
         $order->update(['status' => $request->status]);

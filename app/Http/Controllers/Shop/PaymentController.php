@@ -20,11 +20,14 @@ class PaymentController extends Controller
             'payment_proof' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        // Hapus bukti lama sebelum simpan yang baru
+        if ($order->payment_proof) {
+            Storage::disk('public')->delete($order->payment_proof);
+        }
+
         $path = $request->file('payment_proof')->store('payment_proofs', 'public');
 
-        $order->update([
-            'payment_proof' => $path,
-        ]);
+        $order->update(['payment_proof' => $path]);
 
         return back()->with('success', 'Bukti pembayaran berhasil diupload. Menunggu konfirmasi admin.');
     }

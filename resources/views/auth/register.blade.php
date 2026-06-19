@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Glow&Co</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
-<body>
+<body class="auth-body">
 
 <div class="container py-5 min-vh-100 d-flex align-items-center">
     <div class="card auth-card w-100">
@@ -15,14 +17,14 @@
 
             <!-- KIRI -->
             <div class="col-lg-6 left-panel d-flex flex-column justify-content-center">
-                <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="{{ url('/') }}">
                     <div class="brand-logo">GLOW<span>&CO</span></div>
                 </a>
                 <h1 class="hero-title">
                     Raih Kulit <span>Glowing</span> Impianmu
                 </h1>
-                <p class="text-secondary mt-4">
-                    Masuk untuk melihat promo eksklusif dan produk skincare premium terbaik.
+                <p class="mt-4">
+                    Daftar sekarang dan dapatkan akses ke promo eksklusif serta produk skincare premium terbaik.
                 </p>
             </div>
 
@@ -52,6 +54,7 @@
                                 type="text"
                                 name="name"
                                 class="form-control @error('name') is-invalid @enderror"
+                                placeholder="Masukkan nama lengkap"
                                 value="{{ old('name') }}">
                         </div>
 
@@ -61,6 +64,7 @@
                                 type="email"
                                 name="email"
                                 class="form-control @error('email') is-invalid @enderror"
+                                placeholder="Masukkan email"
                                 value="{{ old('email') }}">
                         </div>
 
@@ -69,7 +73,8 @@
                             <input
                                 type="password"
                                 name="password"
-                                class="form-control @error('password') is-invalid @enderror">
+                                class="form-control @error('password') is-invalid @enderror"
+                                placeholder="Masukkan password">
                         </div>
 
                         <div class="mb-4">
@@ -77,7 +82,8 @@
                             <input
                                 type="password"
                                 name="password_confirmation"
-                                class="form-control">
+                                class="form-control"
+                                placeholder="Ulangi password">
                         </div>
 
                         <button class="btn btn-theme w-100">Daftar</button>
@@ -86,7 +92,7 @@
 
                     <div class="text-center mt-4">
                         Sudah punya akun?
-                        <a href="{{ route('login') }}" class="text-decoration-none fw-semibold" style="color:#9A7B67">
+                        <a href="{{ route('login') }}" class="text-decoration-none fw-semibold">
                             Login
                         </a>
                     </div>

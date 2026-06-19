@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Shop\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Shop\ProductController;
@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SalesReportController;
 use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Shop\ReviewController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\SettingController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -43,12 +44,15 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
     Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings/general', [SettingController::class, 'updateGeneral'])->name('settings.update-general');
+    Route::post('/settings/bank-accounts', [SettingController::class, 'updateBankAccounts'])->name('settings.update-bank');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Cart
     Route::get('/cart', [App\Http\Controllers\Shop\CartController::class, 'index'])->name('cart.index');
@@ -80,6 +84,11 @@ Route::middleware('auth')->group(function () {
     // Review
     Route::get('/reviews/{orderItem}/create', [ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/reviews/{orderItem}', [ReviewController::class, 'store'])->name('reviews.store');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
 });
 
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
