@@ -5,6 +5,99 @@
    dimuat lebih dulu sebelum file ini.
    ────────────────────────────────────────────────────── */
 
+/* ── REMEMBER ME & FORGOT PASSWORD ─────────────────── */
+.auth-card .form-check-input {
+  border-color: var(--border);
+}
+
+.auth-card .form-check-input:checked {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+}
+
+.auth-card .form-check-label {
+  color: var(--text-muted);
+}
+
+.auth-card .forgot-link {
+  color: var(--secondary);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.auth-card .forgot-link:hover {
+  color: var(--primary);
+}
+
+/* ── DIVIDER "atau" ─────────────────────────────────── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.auth-divider hr {
+  flex-grow: 1;
+  border-top: 1px solid var(--border);
+  opacity: 1;
+  margin: 0;
+}
+
+.auth-divider span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ── GOOGLE BUTTON ──────────────────────────────────── */
+.btn-google {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: var(--transition);
+}
+
+.btn-google:hover {
+  border-color: var(--secondary);
+  background: var(--light);
+  color: var(--primary);
+}
+
+/* ── ALERT SUCCESS (status reset password / verifikasi) ── */
+.auth-card .alert-success {
+  background: rgba(168, 181, 160, 0.15);
+  border: 1px solid rgba(168, 181, 160, 0.4);
+  color: #5a7553;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  padding: 14px 18px;
+}
+
+/* ── ICON CENTER (verify email page) ───────────────── */
+.auth-icon-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.auth-icon-circle i {
+  font-size: 2rem;
+  color: var(--secondary);
+}
 body.auth-body {
   background: linear-gradient(135deg, var(--cream) 0%, var(--blush) 50%, #f9ede6 100%);
   min-height: 100vh;

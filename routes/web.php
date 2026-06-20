@@ -19,13 +19,12 @@ use App\Http\Controllers\Shop\ReviewController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Shop\WishlistController;
+use App\Http\Controllers\Auth\GoogleController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -51,7 +50,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/settings/bank-accounts', [SettingController::class, 'updateBankAccounts'])->name('settings.update-bank');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Cart
     Route::get('/cart', [App\Http\Controllers\Shop\CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [App\Http\Controllers\Shop\CartController::class, 'store'])->name('cart.store');
@@ -98,6 +97,10 @@ Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product
 
 Route::get('/category/{slug}', [App\Http\Controllers\Shop\ProductController::class, 'byCategory'])->name('category.show');
 
+// Google
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+
 // -- debugging --
 Route::get('/cek-status', function () {
     if (Auth::check()) {
@@ -117,4 +120,5 @@ Route::get('/force-logout', function () {
     request()->session()->regenerateToken();
     return redirect('/');
 });
+
 require __DIR__.'/auth.php';
