@@ -68,6 +68,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('wishlist.index') }}">
+                                    <i class="bi bi-heart"></i> Wishlist Saya
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('addresses.index') }}">
                                     <i class="bi bi-geo-alt"></i> Alamat Saya
                                 </a>

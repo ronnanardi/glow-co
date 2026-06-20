@@ -23,19 +23,24 @@
                 <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
                     <i class="bi bi-list"></i>
                 </button>
-                <h5 class="mb-0">@yield('page-title', 'Dashboard')</h5>
-            </div>
-            <div class="dropdown">
-                <button class="d-flex align-items-center gap-2 border-0 bg-transparent p-0"
-            data-bs-toggle="dropdown" aria-expanded="false">
-        <span style="font-size:0.85rem;color:#999">
-            Halo, {{ auth()->user()->name }}
-        </span>
-        <div class="user-avatar">
-            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <h5 class="mb-0">@yield('page-title', 'Dashboard')</h5>
         </div>
-        <i class="bi bi-chevron-down" style="font-size:0.75rem;color:#999"></i>
-    </button>
+
+        <div class="dropdown">
+            <button class="d-flex align-items-center gap-2 border-0 bg-transparent p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                <span style="font-size:0.85rem;color:#999">
+                    Halo, {{ auth()->user()->name }}
+                </span>
+                 <div class="user-avatar" style="overflow:hidden">
+                    @if(auth()->user()->avatar)
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}"
+                            style="width:100%;height:100%;object-fit:cover;border-radius:50%">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    @endif
+                </div>
+                <i class="bi bi-chevron-down" style="font-size:0.75rem;color:#999"></i>
+            </button>
 
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li>
@@ -46,7 +51,7 @@
                         </div>
                     </li>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('profile.edit') }}">
                             <i class="bi bi-person"></i> Profil Saya
                         </a>
                     </li>
@@ -67,6 +72,7 @@
                 </ul>
             </div>
         </div>
+
         {{-- Konten --}}
         <div class="content-area">
             @yield('content')

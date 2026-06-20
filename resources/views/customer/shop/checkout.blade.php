@@ -74,10 +74,11 @@
                         <div class="row g-2 mb-3">
                             @foreach(['jne' => 'JNE', 'tiki' => 'TIKI', 'pos' => 'POS Indonesia'] as $key => $label)
                                 <div class="col-4">
-                                    <button type="button" class="btn btn-outline-secondary w-100 btn-kurir"
-                                            data-kurir="{{ $key }}">
-                                        {{ $label }}
-                                    </button>
+
+                                        <button type="button" class="btn btn-outline-secondary w-100 btn-kurir"
+                                                data-kurir="{{ $key }}">
+                                            {{ $label }}
+                                        </button>
                                 </div>
                             @endforeach
                         </div>
@@ -119,10 +120,10 @@
                         <div class="row g-3">
                             @foreach(['Transfer Bank', 'GoPay', 'OVO', 'DANA', 'COD'] as $method)
                                 <div class="col-6 col-md-4">
-                                    <div class="form-check p-3 border rounded-3">
+                                    <div class="form-check">
                                         <input class="form-check-input" type="radio"
-                                               name="payment_method" value="{{ $method }}"
-                                               {{ $loop->first ? 'checked' : '' }}>
+                                            name="payment_method" value="{{ $method }}"
+                                            {{ $loop->first ? 'checked' : '' }}>
                                         <label class="form-check-label ms-2 fw-semibold" style="font-size:0.88rem">
                                             {{ $method }}
                                         </label>

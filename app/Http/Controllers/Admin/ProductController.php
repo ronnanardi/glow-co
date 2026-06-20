@@ -38,14 +38,15 @@ class ProductController extends Controller
     {
         //
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name'        => 'required|string|max:255|unique:products,name',
-            'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
-            'stock'       => 'required|integer|min:0',
-            'badge'       => 'nullable|in:best,new,sale',
-            'is_active'   => 'boolean',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'category_id'       => 'required|exists:categories,id',
+            'name'              => 'required|string|max:255|unique:products,name',
+            'description'       => 'nullable|string',
+            'price'             => 'required|numeric|min:0',
+            'original_price'    => 'nullable|numeric|gt:price',
+            'stock'             => 'required|integer|min:0',
+            'badge'             => 'nullable|in:best,new,sale',
+            'is_active'         => 'boolean',
+            'image'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $imagePath = null;
@@ -54,15 +55,16 @@ class ProductController extends Controller
         }
 
         Product::create([
-            'category_id' => $request->category_id,
-            'name'        => $request->name,
-            'slug'        => Str::slug($request->name),
-            'description' => $request->description,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'badge'       => $request->badge,
-            'is_active'   => $request->boolean('is_active', true),
-            'image'       => $imagePath,
+            'category_id'       => $request->category_id,
+            'name'              => $request->name,
+            'slug'              => Str::slug($request->name),
+            'description'       => $request->description,
+            'price'             => $request->price,
+            'original_price'    => $request->original_price,
+            'stock'             => $request->stock,
+            'badge'             => $request->badge,
+            'is_active'         => $request->boolean('is_active', true),
+            'image'             => $imagePath,
         ]);
 
         return redirect()->route('admin.products.index')
@@ -94,14 +96,15 @@ class ProductController extends Controller
     {
         //
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name'        => 'required|string|max:255|unique:products,name,' . $product->id,
-            'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
-            'stock'       => 'required|integer|min:0',
-            'badge'       => 'nullable|in:best,new,sale',
-            'is_active'   => 'boolean',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'category_id'       => 'required|exists:categories,id',
+            'name'              => 'required|string|max:255|unique:products,name,' . $product->id,
+            'description'       => 'nullable|string',
+            'price'             => 'required|numeric|min:0',
+            'original_price'    => 'nullable|numeric|gt:price',
+            'stock'             => 'required|integer|min:0',
+            'badge'             => 'nullable|in:best,new,sale',
+            'is_active'         => 'boolean',
+            'image'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $imagePath = $product->image;
@@ -114,15 +117,16 @@ class ProductController extends Controller
         }
 
         $product->update([
-            'category_id' => $request->category_id,
-            'name'        => $request->name,
-            'slug'        => Str::slug($request->name),
-            'description' => $request->description,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'badge'       => $request->badge,
-            'is_active'   => $request->boolean('is_active', true),
-            'image'       => $imagePath,
+            'category_id'       => $request->category_id,
+            'name'              => $request->name,
+            'slug'              => Str::slug($request->name),
+            'description'       => $request->description,
+            'price'             => $request->price,
+            'original_price'    => $request->original_price,
+            'stock'             => $request->stock,
+            'badge'             => $request->badge,
+            'is_active'         => $request->boolean('is_active', true),
+            'image'             => $imagePath,
         ]);
 
         return redirect()->route('admin.products.index')

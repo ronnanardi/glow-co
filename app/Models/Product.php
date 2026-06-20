@@ -9,13 +9,14 @@ class Product extends Model
     //
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
-        'price', 'stock', 'image', 'is_active',
-        'avg_rating', 'reviews_count', 'badge',
+        'price', 'original_price', 'stock', 'image', 'badge', 'is_active',
+        'avg_rating', 'reviews_count',
     ];
 
     protected $casts = [
-        'price'     => 'decimal:2',
-        'is_active' => 'boolean',
+        'price'          => 'decimal:2',
+        'original_price' => 'decimal:2',
+        'is_active'      => 'boolean',
     ];
 
     // Scope produk aktif
@@ -57,5 +58,21 @@ class Product extends Model
             'avg_rating'    => $this->reviews()->avg('rating') ?? 0,
             'reviews_count' => $this->reviews()->count(),
         ]);
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function isOnSale(): bool
+    {
+        return $this->original_price && $this->original_price > $this->price;
+    }
+
+    public function getDiscountPercentAttribute(): int
+    {
+        if (!$this->isOnSale()) return 0;
+        return round((($this->original_price - $this->price) / $this->original_price) * 100);
     }
 }

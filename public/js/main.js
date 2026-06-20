@@ -136,24 +136,49 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   };
 
-  // ── Wishlist (visual only, belum ada backend) ─────────────
-  document.querySelectorAll('.btn-wishlist').forEach(btn => {
-    btn.addEventListener('click', function () {
-      this.classList.toggle('active');
-      const icon = this.querySelector('i');
-      if (this.classList.contains('active')) {
-        icon && icon.classList.replace('bi-heart', 'bi-heart-fill');
-        this.style.background = '#e94560';
-        this.style.color      = '#fff';
-        showToast('Ditambahkan ke Wishlist ❤️');
-      } else {
-        icon && icon.classList.replace('bi-heart-fill', 'bi-heart');
-        this.style.background = '';
-        this.style.color      = '';
-        showToast('Dihapus dari Wishlist');
-      }
-    });
-  });
+  // ── Wishlist (Ajax, tersimpan ke DB) ──────────────────────
+window.toggleWishlist = function(productId, btn) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    if (!csrfToken) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) return;
+
+        const icon = btn.querySelector('i');
+
+        if (data.status === 'added') {
+            btn.classList.add('active');
+            icon.classList.replace('bi-heart', 'bi-heart-fill');
+        } else {
+            btn.classList.remove('active');
+            icon.classList.replace('bi-heart-fill', 'bi-heart');
+        }
+
+        showToast(data.message);
+
+        // Update badge wishlist kalau ada
+        const wishlistBadge = document.getElementById('wishlistBadge');
+        if (wishlistBadge) {
+            wishlistBadge.textContent = data.wishlistCount;
+            wishlistBadge.style.display = data.wishlistCount > 0 ? 'flex' : 'none';
+        }
+    })
+    .catch(() => showToast('Terjadi kesalahan. Coba lagi.', 'error'));
+};
 
   // ── Toast Notification ────────────────────────────────────
   function showToast(message, type = 'success') {
@@ -263,37 +288,85 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── Quick View Modal ──────────────────────────────────────
   // Mengambil data dari card produk dan menampilkan di modal
+  // document.querySelectorAll('.btn-quick-view').forEach(btn => {
+  //   btn.addEventListener('click', function () {
+  //     const card  = this.closest('.product-card');
+  //     const name  = card.querySelector('.product-name')?.textContent  || '';
+  //     const price = card.querySelector('.product-price')?.textContent || '';
+  //     const brand = card.querySelector('.product-brand')?.textContent || '';
+  //     const img   = card.querySelector('.product-img-wrap img')?.src   || '';
+
+  //     // Isi modal
+  //     const qvName  = document.getElementById('qvProductName');
+  //     const qvPrice = document.getElementById('qvProductPrice');
+  //     const qvBrand = document.getElementById('qvProductBrand');
+  //     const qvImg   = document.getElementById('qvProductImg');
+
+  //     if (qvName)  qvName.textContent  = name;
+  //     if (qvPrice) qvPrice.textContent = price;
+  //     if (qvBrand) qvBrand.textContent = brand;
+  //     if (qvImg)   qvImg.src           = img;
+
+  //     // Tombol "Tambah ke Keranjang" di modal — arahkan ke link produk
+  //     // karena quick view tidak bisa langsung POST ke Laravel tanpa product_id
+  //     const qvBtn = document.querySelector('#quickViewModal .btn-add-cart');
+  //     const productLink = card.querySelector('a[href*="product"]');
+  //     if (qvBtn && productLink) {
+  //       qvBtn.onclick = () => window.location.href = productLink.href;
+  //       qvBtn.textContent = 'Lihat Detail Produk';
+  //     }
+
+  //     const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+  //     modal.show();
+  //   });
+  // });
+
+  // ── Quick View Modal ──────────────────────────────────────
   document.querySelectorAll('.btn-quick-view').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const card  = this.closest('.product-card');
-      const name  = card.querySelector('.product-name')?.textContent  || '';
-      const price = card.querySelector('.product-price')?.textContent || '';
-      const brand = card.querySelector('.product-brand')?.textContent || '';
-      const img   = card.querySelector('.product-img-wrap img')?.src   || '';
+      btn.addEventListener('click', function () {
+          const name    = this.dataset.name    || '';
+          const price   = this.dataset.price   || '';
+          const brand   = this.dataset.brand   || '';
+          const img     = this.dataset.img     || '';
+          const desc    = this.dataset.desc    || '';
+          const rating  = parseFloat(this.dataset.rating) || 0;
+          const reviews = parseInt(this.dataset.reviews) || 0;
+          const link    = this.dataset.link    || '#';
 
-      // Isi modal
-      const qvName  = document.getElementById('qvProductName');
-      const qvPrice = document.getElementById('qvProductPrice');
-      const qvBrand = document.getElementById('qvProductBrand');
-      const qvImg   = document.getElementById('qvProductImg');
+          const qvName   = document.getElementById('qvProductName');
+          const qvPrice  = document.getElementById('qvProductPrice');
+          const qvBrand  = document.getElementById('qvProductBrand');
+          const qvImg    = document.getElementById('qvProductImg');
+          const qvDesc   = document.getElementById('qvProductDesc');
+          const qvRating = document.getElementById('qvProductRating');
+          const qvLink   = document.getElementById('qvProductLink');
 
-      if (qvName)  qvName.textContent  = name;
-      if (qvPrice) qvPrice.textContent = price;
-      if (qvBrand) qvBrand.textContent = brand;
-      if (qvImg)   qvImg.src           = img;
+          if (qvName)  qvName.textContent  = name;
+          if (qvPrice) qvPrice.textContent = price;
+          if (qvBrand) qvBrand.textContent = brand;
+          if (qvImg)   qvImg.src           = img;
+          if (qvDesc)  qvDesc.textContent  = desc;
+          if (qvLink)  qvLink.href         = link;
 
-      // Tombol "Tambah ke Keranjang" di modal — arahkan ke link produk
-      // karena quick view tidak bisa langsung POST ke Laravel tanpa product_id
-      const qvBtn = document.querySelector('#quickViewModal .btn-add-cart');
-      const productLink = card.querySelector('a[href*="product"]');
-      if (qvBtn && productLink) {
-        qvBtn.onclick = () => window.location.href = productLink.href;
-        qvBtn.textContent = 'Lihat Detail Produk';
-      }
+          if (qvRating) {
+              if (reviews > 0) {
+                  let starsHtml = '';
+                  const rounded = Math.round(rating);
+                  for (let i = 1; i <= 5; i++) {
+                      starsHtml += i <= rounded
+                          ? '<i class="bi bi-star-fill"></i>'
+                          : '<i class="bi bi-star"></i>';
+                  }
+                  starsHtml += ` <span style="color:#999;font-size:0.85rem">(${reviews})</span>`;
+                  qvRating.innerHTML = starsHtml;
+              } else {
+                  qvRating.innerHTML = '<span style="color:#999;font-size:0.85rem">Belum ada ulasan</span>';
+              }
+          }
 
-      const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
-      modal.show();
-    });
+          const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+          modal.show();
+      });
   });
 
   // ── Marquee Duplicate ────────────────────────────────────

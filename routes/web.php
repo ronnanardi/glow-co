@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Shop\AddressController;
 use App\Http\Controllers\Admin\StockReportController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Shop\ReviewController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Shop\WishlistController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -26,8 +28,8 @@ Route::get('/', [LandingController::class, 'index'])->name('home');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('/categories', App\Http\Controllers\Admin\CategoryController::class)->except(['show']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('/categories', CategoryController::class)->except(['show']);
     Route::resource('/products', App\Http\Controllers\Admin\ProductController::class)->except(['show']);
     Route::resource('/orders', AdminOrderController::class)->only(['index', 'show']);
     Route::post('/orders/{order}/confirm-payment', [AdminOrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
@@ -50,10 +52,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
 });
 
 Route::middleware('auth')->group(function () {
-    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     // Cart
     Route::get('/cart', [App\Http\Controllers\Shop\CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [App\Http\Controllers\Shop\CartController::class, 'store'])->name('cart.store');
@@ -89,9 +87,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('/wishlist/{wishlist}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
 });
 
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
+
+Route::get('/category/{slug}', [App\Http\Controllers\Shop\ProductController::class, 'byCategory'])->name('category.show');
 
 // -- debugging --
 Route::get('/cek-status', function () {

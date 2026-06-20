@@ -60,6 +60,12 @@
                 <span class="fw-bold" style="font-size:1.6rem;color:#9A7B67">
                     Rp {{ number_format($product->price, 0, ',', '.') }}
                 </span>
+                @if($product->isOnSale())
+                    <span class="text-muted text-decoration-line-through ms-2" style="font-size:1.1rem">
+                        Rp {{ number_format($product->original_price, 0, ',', '.') }}
+                    </span>
+                    <span class="badge bg-danger-subtle text-danger ms-2">-{{ $product->discount_percent }}%</span>
+                @endif
             </div>
 
             <p class="text-muted mb-4" style="line-height:1.8">

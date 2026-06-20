@@ -18,9 +18,46 @@
   --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* ===== Selectable Option (Reusable) ===== */
+.selectable-option {
+    cursor: pointer;
+    display: block;
+}
+
+.selectable-box {
+    border: 2px solid #e5dfd9;
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.selectable-box:hover {
+    border-color: #9A7B67;
+    background: #faf6f3;
+}
+
+.selectable-option input:checked + .selectable-box {
+    border-color: #9A7B67;
+    background: #9A7B67;
+    color: #fff;
+}
+
+.selectable-option input:checked + .selectable-box .text-muted {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+/* Varian: center text (untuk kurir/payment) */
+.selectable-box.text-center {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
 .avatar-wrapper {
     cursor: pointer;
 }
+
 
 .avatar-overlay {
     position: absolute;

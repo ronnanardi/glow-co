@@ -13,7 +13,13 @@ class ProfileController extends Controller
 {
     public function edit()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            return view('admin.profile.edit', compact('user'));
+        }
+
         return view('customer.shop.profile.edit', compact('user'));
     }
 

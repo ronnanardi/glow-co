@@ -53,12 +53,18 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Harga (Rp)</label>
-                        <input type="number" name="price"
-                               class="form-control @error('price') is-invalid @enderror"
-                               value="{{ old('price', $product->price) }}" min="0">
-                        @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label fw-semibold">Harga Jual (Rp)</label>
+                        <input type="number" name="price" class="form-control"
+                            value="{{ old('price', $product->price ?? '') }}" min="0">
                     </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Harga Asli (Rp) <span class="text-muted fw-normal">opsional, untuk diskon</span></label>
+                        <input type="number" name="original_price" class="form-control"
+                            value="{{ old('original_price', $product->original_price ?? '') }}" min="0"
+                            placeholder="Kosongkan jika tidak diskon">
+                    </div>
+                    
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Stok</label>
                         <input type="number" name="stock"
