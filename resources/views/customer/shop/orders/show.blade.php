@@ -137,80 +137,36 @@
 
             {{-- Info & Upload Pembayaran (hanya saat pending) --}}
             @if($order->status === 'pending')
+                <div class="card border-0 shadow-sm rounded-3 mt-4">
+                    <div class="card-body p-4 text-center">
+                        <h6 class="fw-bold mb-3">Selesaikan Pembayaran</h6>
+                        <p class="text-muted mb-4" style="font-size:0.88rem">
+                            Klik tombol di bawah untuk memilih metode pembayaran (Transfer Bank, GoPay, QRIS, Kartu Kredit, dll).
+                        </p>
 
-                <div class="card border-0 shadow-sm rounded-3 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Informasi Pembayaran</h6>
-
-                        <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
-                            <i class="bi bi-exclamation-circle mt-1"></i>
-                            <div style="font-size:0.88rem">
-                                Silakan transfer sesuai total pesanan ke salah satu rekening di bawah,
-                                lalu upload bukti transfer.
-                            </div>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            @foreach(json_decode(\App\Models\Setting::get('bank_accounts', '[]'), true) as $bank)
-                                <div class="col-md-6">
-                                    <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="text-muted" style="font-size:0.78rem">Bank {{ $bank['bank'] }}</div>
-                                            <div class="fw-bold" style="font-size:1.05rem">{{ $bank['number'] }}</div>
-                                            <div style="font-size:0.85rem">a.n. {{ $bank['name'] }}</div>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                onclick="copyRek('{{ $bank['number'] }}', this)">
-                                            <i class="bi bi-clipboard"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background:var(--cream)">
-                            <span class="fw-semibold">Total yang harus dibayar</span>
-                            <span class="fw-bold" style="color:#9A7B67;font-size:1.1rem">
-                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                            </span>
-                        </div>
+                        <button id="pay-button" class="btn btn-theme px-5">
+                            <i class="bi bi-credit-card me-1"></i> Bayar Sekarang
+                        </button>
                     </div>
                 </div>
-
-                <div class="card border-0 shadow-sm rounded-3 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Upload Bukti Pembayaran</h6>
-
-                        @if($order->payment_proof)
-                            <div class="mb-3">
-                                <img src="{{ Storage::url($order->payment_proof) }}"
-                                    class="img-fluid rounded-3" style="max-width:300px">
-                                <div class="text-success mt-2">
-                                    <i class="bi bi-check-circle"></i> Bukti sudah diupload, menunggu konfirmasi admin.
-                                </div>
-                            </div>
+            @elseif($order->status === 'paid' || $order->status === 'processed' || $order->status === 'shipped' || $order->status === 'completed')
+                <div class="alert alert-success d-flex align-items-center gap-2 mt-4">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <div>
+                        Pembayaran berhasil
+                        @if($order->payment_type)
+                            via {{ strtoupper(str_replace('_', ' ', $order->payment_type)) }}
                         @endif
-
-                        <form method="POST" action="{{ route('orders.payment.upload', $order) }}" enctype="multipart/form-data">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    {{ $order->payment_proof ? 'Ganti Bukti' : 'Pilih Foto Bukti Transfer' }}
-                                </label>
-                                <input type="file" name="payment_proof"
-                                    class="form-control @error('payment_proof') is-invalid @enderror"
-                                    accept="image/*">
-                                @error('payment_proof')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <button type="submit" class="btn btn-theme">
-                                <i class="bi bi-upload me-1"></i> Upload Bukti
-                            </button>
-                        </form>
+                        @if($order->paid_at)
+                            pada {{ $order->paid_at->format('d M Y, H:i') }}
+                        @endif
                     </div>
                 </div>
-
+            @elseif($order->status === 'cancelled')
+                <div class="alert alert-danger d-flex align-items-center gap-2 mt-4">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <span>Pembayaran dibatalkan atau kedaluwarsa.</span>
+                </div>
             @endif
 
         </div>
@@ -240,7 +196,9 @@
                             </span>
                         </div>
                         <div class="col-5 text-muted">Pembayaran</div>
-                        <div class="col-7">{{ $order->payment_method }}</div>
+                        <div class="col-7">
+                            {{ $order->payment_type ? strtoupper(str_replace('_', ' ', $order->payment_type)) : 'Menunggu pembayaran' }}
+                        </div>
                         <div class="col-5 text-muted">Tanggal</div>
                         <div class="col-7">{{ $order->created_at->format('d M Y') }}</div>
                         @if($order->paid_at)
@@ -280,7 +238,7 @@
 @endsection
 
 @section('js')
-<script>
+{{-- <script>
     function copyRek(number, btn) {
         navigator.clipboard.writeText(number).then(() => {
             const icon = btn.querySelector('i');
@@ -288,6 +246,31 @@
             setTimeout(() => {
                 icon.className = 'bi bi-clipboard';
             }, 1500);
+        });
+    }
+</script> --}}
+
+<script src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+
+<script>
+    const payButton = document.getElementById('pay-button');
+    if (payButton) {
+        payButton.addEventListener('click', function () {
+            snap.pay('{{ $order->snap_token }}', {
+                onSuccess: function(result) {
+                    window.location.reload();
+                },
+                onPending: function(result) {
+                    window.location.reload();
+                },
+                onError: function(result) {
+                    alert('Pembayaran gagal. Silakan coba lagi.');
+                },
+                onClose: function() {
+                    // User menutup popup tanpa menyelesaikan pembayaran
+                }
+            });
         });
     }
 </script>

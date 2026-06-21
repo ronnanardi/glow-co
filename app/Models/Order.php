@@ -12,6 +12,7 @@ class Order extends Model
         'shipping_cost', 'courier', 'courier_service',
         'voucher_code', 'discount',
         'status', 'payment_method', 'payment_proof', 'paid_at', 'completed_at',
+        'snap_token', 'payment_type', 'midtrans_transaction_id',
     ];
 
     protected $casts = [

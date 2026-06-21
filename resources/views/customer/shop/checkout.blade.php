@@ -113,27 +113,6 @@
                     </div>
                 </div>
 
-                {{-- Metode Pembayaran --}}
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Metode Pembayaran</h6>
-                        <div class="row g-3">
-                            @foreach(['Transfer Bank', 'GoPay', 'OVO', 'DANA', 'COD'] as $method)
-                                <div class="col-6 col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio"
-                                            name="payment_method" value="{{ $method }}"
-                                            {{ $loop->first ? 'checked' : '' }}>
-                                        <label class="form-check-label ms-2 fw-semibold" style="font-size:0.88rem">
-                                            {{ $method }}
-                                        </label>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             {{-- Kanan: Summary --}}

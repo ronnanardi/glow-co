@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
-    
     public function redirect()
     {
-        // dd(config('services.google'));
         return Socialite::driver('google')->redirect();
     }
 
@@ -25,25 +22,27 @@ class GoogleController extends Controller
             return redirect()->route('login')->with('error', 'Login dengan Google gagal. Coba lagi.');
         }
 
-        // Cek apakah user sudah ada (berdasarkan google_id atau email)
         $user = User::where('google_id', $googleUser->id)
                     ->orWhere('email', $googleUser->email)
                     ->first();
 
         if ($user) {
-            // Update google_id kalau user sudah ada via email tapi belum link Google
             if (!$user->google_id) {
                 $user->update(['google_id' => $googleUser->id]);
             }
+
+            // Pastikan email terverifikasi kalau login pakai Google
+            if (!$user->email_verified_at) {
+                $user->update(['email_verified_at' => now()]);
+            }
         } else {
-            // Buat user baru
             $user = User::create([
-                'name'      => $googleUser->name,
-                'email'     => $googleUser->email,
-                'google_id' => $googleUser->id,
-                'password'  => null,
-                'role'      => 'customer',
-                'email_verified_at' => now(),
+                'name'              => $googleUser->name,
+                'email'             => $googleUser->email,
+                'google_id'         => $googleUser->id,
+                'password'          => null,
+                'role'              => 'customer',
+                'email_verified_at' => now(), // langsung terverifikasi
             ]);
         }
 

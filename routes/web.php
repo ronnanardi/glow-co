@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Shop\WishlistController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Shop\MidtransWebhookController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -100,6 +101,12 @@ Route::get('/category/{slug}', [App\Http\Controllers\Shop\ProductController::cla
 // Google
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+
+// Midtrans Webhook
+// Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle'])->name('midtrans.webhook');
+// Route::withoutMiddleware([ValidateCsrfToken::class])
+//     ->post('/midtrans/webhook', [App\Http\Controllers\Shop\MidtransWebhookController::class, 'handle'])
+//     ->name('midtrans.webhook');
 
 // -- debugging --
 Route::get('/cek-status', function () {

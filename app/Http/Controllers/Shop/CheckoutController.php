@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Voucher;
 use App\Services\RajaOngkirService;
+use App\Services\MidtransService;
 
 
 
@@ -49,11 +50,10 @@ class CheckoutController extends Controller
         return view('customer.shop.checkout', compact('cart', 'addresses'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, MidtransService $midtrans)
     {
         $request->validate([
             'address_id'      => 'required|exists:addresses,id',
-            'payment_method'  => 'required|string',
             'courier'         => 'required|string',
             'courier_service' => 'required|string',
             'shipping_cost'   => 'required|numeric',
@@ -73,20 +73,19 @@ class CheckoutController extends Controller
             }
         }
 
-        // Hitung ulang diskon di server, JANGAN percaya nilai dari request
         $discount = 0;
         if ($request->voucher_code) {
             $voucher = \App\Models\Voucher::where('code', $request->voucher_code)->first();
-
             if ($voucher) {
-                [$valid, $message] = $voucher->isValid($cart->total);
+                [$valid] = $voucher->isValid($cart->total);
                 if ($valid) {
                     $discount = $voucher->calculateDiscount($cart->total);
                 }
             }
         }
 
-        DB::transaction(function () use ($request, $cart, $discount) {
+        /** @var Order $order */
+        $order = DB::transaction(function () use ($request, $cart, $discount) {
 
             $total = $cart->total + $request->shipping_cost - $discount;
 
@@ -100,7 +99,7 @@ class CheckoutController extends Controller
                 'voucher_code'    => $discount > 0 ? $request->voucher_code : null,
                 'discount'        => $discount,
                 'status'          => Order::STATUS_PENDING,
-                'payment_method'  => $request->payment_method,
+                'payment_method'  => 'midtrans',
             ]);
 
             foreach ($cart->items as $item) {
@@ -127,9 +126,13 @@ class CheckoutController extends Controller
             }
 
             $cart->items()->delete();
+
+            return $order; // return dari closure, bukan pass by reference
         });
 
-        return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibuat!');
+        $midtrans->createSnapToken($order);
+
+        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.');
     }
 
     public function applyVoucher(Request $request)
