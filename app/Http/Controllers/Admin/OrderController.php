@@ -23,17 +23,17 @@ class OrderController extends Controller
     }
 
     // Konfirmasi pembayaran
-    public function confirmPayment(Order $order)
-    {
-        abort_if($order->status !== Order::STATUS_PENDING, 403);
+    // public function confirmPayment(Order $order)
+    // {
+    //     abort_if($order->status !== Order::STATUS_PENDING, 403);
 
-        $order->update([
-            'status'  => Order::STATUS_PAID,
-            'paid_at' => now(),
-        ]);
+    //     $order->update([
+    //         'status'  => Order::STATUS_PAID,
+    //         'paid_at' => now(),
+    //     ]);
 
-        return back()->with('success', 'Pembayaran dikonfirmasi.');
-    }
+    //     return back()->with('success', 'Pembayaran dikonfirmasi.');
+    // }
 
     // Update status order
     public function updateStatus(Request $request, Order $order)

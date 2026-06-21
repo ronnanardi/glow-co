@@ -17,7 +17,7 @@ class CancelExpiredOrders extends Command
     public function handle()
     {
         $expiredOrders = Order::where('status', Order::STATUS_PENDING)
-            ->where('created_at', '<=', now()->subHours(24))
+            ->where('created_at', '<=', now()->subHours(2))
             ->get();
 
         foreach ($expiredOrders as $order) {

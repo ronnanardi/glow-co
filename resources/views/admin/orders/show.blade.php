@@ -79,32 +79,24 @@
             {{-- Bukti Pembayaran --}}
             <div class="card-panel mb-4">
                 <div class="card-header-custom">
-                    <h6>Bukti Pembayaran</h6>
+                    <h6>Info Pembayaran</h6>
                 </div>
                 <div class="card-body-custom">
-                    @if($order->payment_proof)
-                        <img src="{{ Storage::url($order->payment_proof) }}"
-                             class="img-fluid rounded-3 mb-3" style="max-width:350px">
-
-                        @if($order->status === 'pending')
-                            <div>
-                                <form method="POST" action="{{ route('admin.orders.confirm-payment', $order) }}"
-                                      onsubmit="return confirm('Konfirmasi pembayaran ini sudah valid?')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-theme">
-                                        <i class="bi bi-check-lg me-1"></i> Konfirmasi Pembayaran
-                                    </button>
-                                </form>
-                            </div>
-                        @else
-                            <div class="text-success">
-                                <i class="bi bi-check-circle"></i>
-                                Pembayaran dikonfirmasi pada {{ $order->paid_at?->format('d M Y, H:i') }}
-                            </div>
-                        @endif
+                    @if($order->status === 'pending')
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Menunggu pembayaran dari customer via Midtrans.</span>
+                        </div>
                     @else
-                        <div class="text-muted">
-                            <i class="bi bi-hourglass"></i> Customer belum upload bukti pembayaran.
+                        <div class="row g-2" style="font-size:0.88rem">
+                            <div class="col-5 text-muted">Metode</div>
+                            <div class="col-7 fw-semibold">
+                                {{ $order->payment_type ? strtoupper(str_replace('_', ' ', $order->payment_type)) : '-' }}
+                            </div>
+                            <div class="col-5 text-muted">Transaction ID</div>
+                            <div class="col-7" style="font-size:0.8rem">{{ $order->midtrans_transaction_id ?? '-' }}</div>
+                            <div class="col-5 text-muted">Dibayar pada</div>
+                            <div class="col-7">{{ $order->paid_at?->format('d M Y, H:i') ?? '-' }}</div>
                         </div>
                     @endif
                 </div>

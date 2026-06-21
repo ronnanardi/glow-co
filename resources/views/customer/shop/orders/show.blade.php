@@ -168,7 +168,6 @@
                     <span>Pembayaran dibatalkan atau kedaluwarsa.</span>
                 </div>
             @endif
-
         </div>
 
         {{-- Kanan --}}

@@ -32,7 +32,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::resource('/categories', CategoryController::class)->except(['show']);
     Route::resource('/products', App\Http\Controllers\Admin\ProductController::class)->except(['show']);
     Route::resource('/orders', AdminOrderController::class)->only(['index', 'show']);
-    Route::post('/orders/{order}/confirm-payment', [AdminOrderController::class, 'confirmPayment'])->name('orders.confirm-payment');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('/orders/{order}/shipment', [AdminOrderController::class, 'addShipment'])->name('orders.add-shipment');
     Route::resource('/vouchers', VoucherController::class)->except(['show']);
@@ -67,7 +66,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Orders
     Route::get('/orders', [App\Http\Controllers\Shop\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [App\Http\Controllers\Shop\OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{order}/payment', [App\Http\Controllers\Shop\PaymentController::class, 'upload'])->name('orders.payment.upload');
     Route::post('/orders/{order}/complete', [App\Http\Controllers\Shop\OrderController::class, 'complete'])->name('orders.complete');
 
     // Alamat
