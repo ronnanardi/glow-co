@@ -7,8 +7,6 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use App\Models\Order;
 
-#[Signature('app:cancel-expired-orders')]
-#[Description('Command description')]
 class CancelExpiredOrders extends Command
 {
     protected $signature = 'orders:cancel-expired';

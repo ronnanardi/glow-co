@@ -32,11 +32,7 @@
                 @else
                     <div class="dropdown">
                         <button class="d-flex align-items-center gap-2 border-0 bg-transparent p-0" 
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            
-                            <span style="font-size:0.85rem;color:#999">
-                                Halo, {{ auth()->user()->name }}
-                            </span>
+                                data-bs-toggle="dropdown" aria-expanded="false">               
                             <div class="user-avatar">
                                 @if(auth()->user()->avatar)
                                     <img src="{{ Storage::url(auth()->user()->avatar) }}"
@@ -45,6 +41,13 @@
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 @endif
                             </div>
+                            <span style="font-size:0.85rem;color:#999">Halo, {{ auth()->user()->name }}</span>
+                            @if(auth()->user()->tier !== 'regular')
+                                @php $tierColors = ['silver' => '#c0c0c0', 'gold' => '#C9A87C']; @endphp
+                                <span class="badge" style="background:{{ $tierColors[auth()->user()->tier] }};font-size:0.65rem">
+                                    {{ strtoupper(auth()->user()->tier) }}
+                                </span>
+                            @endif
                             <i class="bi bi-chevron-down" style="font-size:0.75rem;color:#999"></i>
                         </button>
 

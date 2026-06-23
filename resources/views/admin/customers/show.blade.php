@@ -12,6 +12,27 @@
         <h5 class="mb-0 fw-bold">{{ $customer->name }}</h5>
     </div>
 
+    <div class="d-flex align-items-center gap-2 mb-3">
+        @php
+            $tierColors = ['regular' => '#999', 'silver' => '#c0c0c0', 'gold' => '#C9A87C'];
+        @endphp
+        <span class="badge" style="background:{{ $tierColors[$customer->tier] ?? '#999' }}">
+            {{ ucfirst($customer->tier) }}
+        </span>
+        <form method="POST" action="{{ route('admin.customers.update-tier', $customer) }}" class="d-flex gap-2">
+            @csrf
+            @method('PUT')
+            <select name="tier" class="form-select form-select-sm" style="width:120px">
+                @foreach(['regular', 'silver', 'gold'] as $tier)
+                    <option value="{{ $tier }}" {{ $customer->tier === $tier ? 'selected' : '' }}>
+                        {{ ucfirst($tier) }}
+                    </option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Update Tier</button>
+        </form>
+    </div>
+
     <div class="row g-4">
 
         {{-- Kiri: Riwayat Order --}}

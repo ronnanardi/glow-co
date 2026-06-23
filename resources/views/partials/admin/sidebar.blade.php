@@ -23,7 +23,6 @@
         <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
             <i class="bi bi-tags"></i> Kategori
         </a>
-
         <a href="{{ route('admin.vouchers.index') }}" class="{{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
             <i class="bi bi-percent"></i> Promo & Voucher
         </a>
@@ -32,6 +31,17 @@
         </a>
         <a href="{{ route('admin.shipments.index') }}" class="{{ request()->routeIs('admin.shipments.*') ? 'active' : '' }}">
             <i class="bi bi-truck"></i> Pengiriman
+        </a>
+
+        <div class="menu-label mt-3">Diskon</div>
+        <a href="{{ route('admin.discounts.index') }}" class="{{ request()->routeIs('admin.discounts.*') ? 'active' : '' }}">
+            <i class="bi bi-tag"></i> Diskon Produk & Kategori
+        </a>
+        <a href="{{ route('admin.volume-discounts.index') }}" class="{{ request()->routeIs('admin.volume-discounts.*') ? 'active' : '' }}">
+            <i class="bi bi-stack"></i> Diskon Volume
+        </a>
+        <a href="{{ route('admin.tier-discounts.index') }}" class="{{ request()->routeIs('admin.tier-discounts.*') ? 'active' : '' }}">
+            <i class="bi bi-award"></i> Member Tier
         </a>
 
         <div class="menu-label mt-3">Laporan</div>

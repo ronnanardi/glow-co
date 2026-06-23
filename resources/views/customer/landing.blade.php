@@ -222,6 +222,40 @@
                                         <span class="product-price-old">Rp {{ number_format($product->original_price, 0, ',', '.') }}</span>
                                     @endif
                                 </div>
+
+                                @php
+                                    $activeDiscount = \App\Models\Discount::where('type', 'product')
+                                        ->where('target_id', $product->id)
+                                        ->where('is_active', true)
+                                        ->where(fn($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+                                        ->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
+                                        ->first();
+
+                                    $volumeDiscounts = \App\Models\VolumeDiscount::where('product_id', $product->id)
+                                        ->where('is_active', true)
+                                        ->orderBy('min_quantity')
+                                        ->get();
+                                @endphp
+
+                                @if($activeDiscount)
+                                    <div class="mt-2">
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            Diskon {{ $activeDiscount->value_type === 'percentage' ? $activeDiscount->value . '%' : 'Rp ' . number_format($activeDiscount->value, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                @endif
+
+                                @if($volumeDiscounts->isNotEmpty())
+                                    <div class="mt-2">
+                                        <div class="text-muted" style="font-size:0.82rem">Diskon Grosir:</div>
+                                        @foreach($volumeDiscounts as $vd)
+                                            <span class="badge bg-success-subtle text-success me-1" style="font-size:0.78rem">
+                                                Beli ≥{{ $vd->min_quantity }} pcs: {{ $vd->value_type === 'percentage' ? $vd->value . '%' : 'Rp ' . number_format($vd->value, 0, ',', '.') }} off
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                
                                 @auth
                                     <button class="btn-add-cart"
                                             data-product-id="{{ $product->id }}"

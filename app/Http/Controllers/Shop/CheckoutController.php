@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Voucher;
 use App\Services\RajaOngkirService;
 use App\Services\MidtransService;
+use App\Services\DiscountEngine;
+
 
 
 
@@ -37,20 +39,25 @@ class CheckoutController extends Controller
         return response()->json($costs);
     }
 
-    public function index()
+    public function index(DiscountEngine $engine)
     {
-        $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        $cart = Cart::with('items.product.category')->where('user_id', Auth::id())->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('customer.cart.index')->with('error', 'Keranjang masih kosong.');
+            return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong.');
         }
 
         $addresses = Address::where('user_id', Auth::id())->get();
 
-        return view('customer.shop.checkout', compact('cart', 'addresses'));
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $discountResult = $engine->calculate($cart->items, $user);
+
+        return view('customer.shop.checkout', compact('cart', 'addresses', 'discountResult'));
     }
 
-    public function store(Request $request, MidtransService $midtrans)
+    public function store(Request $request, MidtransService $midtrans, DiscountEngine $engine)
     {
         $request->validate([
             'address_id'      => 'required|exists:addresses,id',
@@ -60,44 +67,41 @@ class CheckoutController extends Controller
             'voucher_code'    => 'nullable|string',
         ]);
 
-        $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $cart = Cart::with('items.product.category')->where('user_id', $user->id)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong.');
         }
 
+        // Hitung semua diskon via engine
+        $result = $engine->calculate($cart->items, $user, $request->voucher_code);
+
+        if ($result['voucher_error']) {
+            return back()->with('error', $result['voucher_error'])->withInput();
+        }
+
         foreach ($cart->items as $item) {
             if ($item->quantity > $item->product->stock) {
                 return redirect()->route('cart.index')->with('error',
-                    "Stok {$item->product->name} tidak cukup (tersisa {$item->product->stock}).");
+                    "Stok {$item->product->name} tidak cukup.");
             }
         }
 
-        $discount = 0;
-        if ($request->voucher_code) {
-            $voucher = \App\Models\Voucher::where('code', $request->voucher_code)->first();
-            if ($voucher) {
-                [$valid] = $voucher->isValid($cart->total);
-                if ($valid) {
-                    $discount = $voucher->calculateDiscount($cart->total);
-                }
-            }
-        }
+        $order = DB::transaction(function () use ($request, $cart, $result, $user) {
 
-        /** @var Order $order */
-        $order = DB::transaction(function () use ($request, $cart, $discount) {
-
-            $total = $cart->total + $request->shipping_cost - $discount;
+            $total = $result['final_total'] + $request->shipping_cost;
 
             $order = Order::create([
-                'user_id'         => Auth::id(),
+                'user_id'         => $user->id,
                 'address_id'      => $request->address_id,
                 'total_price'     => $total,
                 'shipping_cost'   => $request->shipping_cost,
                 'courier'         => $request->courier,
                 'courier_service' => $request->courier_service,
-                'voucher_code'    => $discount > 0 ? $request->voucher_code : null,
-                'discount'        => $discount,
+                'voucher_code'    => $request->voucher_code,
+                'discount'        => $result['subtotal_original'] - $result['final_total'],
                 'status'          => Order::STATUS_PENDING,
                 'payment_method'  => 'midtrans',
             ]);
@@ -109,30 +113,37 @@ class CheckoutController extends Controller
                     throw new \Exception("Stok {$product->name} tidak cukup.");
                 }
 
+                // Cari harga final per item dari breakdown
+                $itemBreakdown = collect($result['breakdown'])->firstWhere('product', $product->name);
+                $finalItemPrice = $itemBreakdown
+                    ? $itemBreakdown['final_price'] / $item->quantity
+                    : $item->price;
+
                 OrderItem::create([
                     'order_id'     => $order->id,
                     'product_id'   => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'price'        => $item->price,
+                    'product_name' => $product->name,
+                    'price'        => $finalItemPrice,
                     'quantity'     => $item->quantity,
-                    'subtotal'     => $item->price * $item->quantity,
+                    'subtotal'     => $finalItemPrice * $item->quantity,
                 ]);
 
                 $product->decrement('stock', $item->quantity);
             }
 
-            if ($discount > 0 && $request->voucher_code) {
-                \App\Models\Voucher::where('code', $request->voucher_code)->increment('used_count');
+            if ($request->voucher_code && $result['voucher_discount'] > 0) {
+                Voucher::where('code', strtoupper($request->voucher_code))->increment('used_count');
             }
 
             $cart->items()->delete();
 
-            return $order; // return dari closure, bukan pass by reference
+            return $order;
         });
 
         $midtrans->createSnapToken($order);
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.');
+        return redirect()->route('orders.show', $order)
+            ->with('success', 'Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.');
     }
 
     public function applyVoucher(Request $request)

@@ -60,6 +60,7 @@
                 <span class="fw-bold" style="font-size:1.6rem;color:#9A7B67">
                     Rp {{ number_format($product->price, 0, ',', '.') }}
                 </span>
+                
                 @if($product->isOnSale())
                     <span class="text-muted text-decoration-line-through ms-2" style="font-size:1.1rem">
                         Rp {{ number_format($product->original_price, 0, ',', '.') }}
@@ -67,6 +68,39 @@
                     <span class="badge bg-danger-subtle text-danger ms-2">-{{ $product->discount_percent }}%</span>
                 @endif
             </div>
+
+            @php
+                $activeDiscount = \App\Models\Discount::where('type', 'product')
+                    ->where('target_id', $product->id)
+                    ->where('is_active', true)
+                    ->where(fn($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+                    ->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
+                    ->first();
+
+                $volumeDiscounts = \App\Models\VolumeDiscount::where('product_id', $product->id)
+                    ->where('is_active', true)
+                    ->orderBy('min_quantity')
+                    ->get();
+            @endphp                                                             
+
+            @if($activeDiscount)
+                <div class="mt-2">
+                    <span class="badge bg-danger-subtle text-danger">
+                        Diskon {{ $activeDiscount->value_type === 'percentage' ? $activeDiscount->value . '%' : 'Rp ' . number_format($activeDiscount->value, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+
+            @if($volumeDiscounts->isNotEmpty())
+                <div class="mt-2">
+                    <div class="text-muted" style="font-size:0.82rem">Diskon Grosir:</div>
+                    @foreach($volumeDiscounts as $vd)
+                        <span class="badge bg-success-subtle text-success me-1" style="font-size:0.78rem">
+                            Beli ≥{{ $vd->min_quantity }} pcs: {{ $vd->value_type === 'percentage' ? $vd->value . '%' : 'Rp ' . number_format($vd->value, 0, ',', '.') }} off
+                        </span>
+                    @endforeach
+                </div>
+            @endif
 
             <p class="text-muted mb-4" style="line-height:1.8">
                 {{ $product->description ?? 'Produk skincare premium dengan bahan aktif terbaik. Cocok untuk semua jenis kulit. BPOM certified.' }}

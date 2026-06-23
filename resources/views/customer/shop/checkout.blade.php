@@ -124,20 +124,39 @@
                         @foreach($cart->items as $item)
                             <div class="d-flex justify-content-between mb-2" style="font-size:0.88rem">
                                 <span class="text-muted">{{ $item->product->name }} x{{ $item->quantity }}</span>
-                                <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                                <span>Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
 
                         <hr>
 
-                        <div class="d-flex justify-content-between mb-2" style="font-size:0.88rem">
-                            <span class="text-muted">Ongkos Kirim</span>
-                            <span id="ongkirDisplay" class="text-muted">— Pilih kurir dulu</span>
+                        {{-- Breakdown diskon dari engine --}}
+                        @if(isset($discountResult))
+                            @if($discountResult['subtotal_original'] > $discountResult['subtotal_after_items'])
+                                <div class="d-flex justify-content-between mb-2 text-danger" style="font-size:0.85rem">
+                                    <span>Diskon Produk/Kategori</span>
+                                    <span>- Rp {{ number_format($discountResult['subtotal_original'] - $discountResult['subtotal_after_items'], 0, ',', '.') }}</span>
+                                </div>
+                            @endif
+
+                            @if($discountResult['tier_discount'] > 0)
+                                <div class="d-flex justify-content-between mb-2 text-danger" style="font-size:0.85rem">
+                                    <span>{{ $discountResult['tier_discount_label'] }}</span>
+                                    <span>- Rp {{ number_format($discountResult['tier_discount'], 0, ',', '.') }}</span>
+                                </div>
+                            @endif
+                        @endif
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Ongkir</span>
+                            <span id="ongkirDisplay">Rp 0</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display:none">
-                            <span class="text-muted">Diskon</span>
+
+                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display:none!important">
+                            <span class="text-muted">Diskon Voucher</span>
                             <span id="discountDisplay" class="text-danger">- Rp 0</span>
                         </div>
+
                         <hr>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="fw-bold">Total</span>
@@ -149,9 +168,6 @@
                         <button type="submit" class="btn btn-theme w-100">
                             <i class="bi bi-bag-check me-1"></i> Buat Pesanan
                         </button>
-                        <a href="{{ route('cart.index') }}" class="btn btn-outline-secondary w-100 mt-2">
-                            Kembali ke Keranjang
-                        </a>
                     </div>
                 </div>
             </div>

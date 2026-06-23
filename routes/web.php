@@ -21,6 +21,9 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Shop\WishlistController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Shop\MidtransWebhookController;
+use App\Http\Controllers\Admin\DiscountController;
+use App\Http\Controllers\Admin\TierDiscountController;
+use App\Http\Controllers\Admin\VolumeDiscountController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
@@ -48,6 +51,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/general', [SettingController::class, 'updateGeneral'])->name('settings.update-general');
     Route::post('/settings/bank-accounts', [SettingController::class, 'updateBankAccounts'])->name('settings.update-bank');
+    Route::resource('/discounts', DiscountController::class)->except(['show']);
+    Route::resource('/volume-discounts', VolumeDiscountController::class)->except(['show']);
+    Route::get('/tier-discounts', [TierDiscountController::class, 'index'])->name('tier-discounts.index');
+    Route::put('/tier-discounts', [TierDiscountController::class, 'update'])->name('tier-discounts.update');
+    Route::put('/customers/{customer}/tier', [TierDiscountController::class, 'updateCustomerTier'])->name('customers.update-tier');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
